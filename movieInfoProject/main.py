@@ -1,20 +1,10 @@
-from CONSTANTS import user, password, host, port, database_name
+from CONSTANTS import user, password, host, port, sample_database_name, TABLES
 from mysqlCtrl import MysqlCtrl
+import pandas as pd
 
-ctrl = MysqlCtrl(user, password, host, port, database_name)
+ctrl = MysqlCtrl(user, password, host, port, sample_database_name)
 
-result = ctrl.query("SELECT * FROM staff;")
+for x in TABLES:
+    result = ctrl.query(f"SELECT * FROM {x};")
 
-print(result)
-
-result = ctrl.query("DESC staff;")
-
-print(result)
-
-result = ctrl.execute("INSERT INTO staff VALUES ('test2', 'test2_last', 123456789);")
-
-print(result)
-
-result = ctrl.query("SELECT * FROM staff;")
-
-print(result)
+    print(len(pd.DataFrame(result)))
