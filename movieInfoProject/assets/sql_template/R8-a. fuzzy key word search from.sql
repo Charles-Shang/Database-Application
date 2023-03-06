@@ -12,7 +12,7 @@ WITH midList(mids) as (
         WHERE name LIKE '%{n}%')
         )
 
-        SELECT *
+        SELECT m.name, m.region, m.year, m.category, m.rates, m.summary, a.name, d.name 
         FROM MOVIE as m, midList,ACTOR a, ACTS ar, DIRECTOR d, DIRECTS dr 
         WHERE ar.actorID  = a.actorID and ar.movieID = m.movieID and 
         dr.directorID  = d.directorID and dr.movieID = m.movieID and
