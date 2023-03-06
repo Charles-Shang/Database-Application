@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine
 import pandas as pd
 
+
 class MysqlCtrl:
 
     def __init__(self, user, password, host, port, database_name):

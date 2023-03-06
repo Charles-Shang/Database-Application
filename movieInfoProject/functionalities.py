@@ -3,6 +3,7 @@ from mysqlCtrl import MysqlCtrl
 import pandas as pd
 import numpy as np
 
+
 class Functionalities:
 
     def __init__(self):
@@ -10,7 +11,7 @@ class Functionalities:
 
     # Top n movies by user ratings
     # n is 5 by default
-    def top_movie_by_ratings (self, n : int = 5) -> pd.DataFrame:
+    def top_movie_by_ratings(self, n: int = 5) -> pd.DataFrame:
         """
         top_movie_by_ratings find the top n movies by user ratings.
 
@@ -28,8 +29,24 @@ class Functionalities:
         """)
         result.index = np.arange(1, n + 1)
         return result
-    
-    def fuzz_search(self, n : str) -> pd.DataFrame:
+
+    def top_actors_with_best_movie(self, n: int = 5) -> pd.DataFrame:
+        result = self.ctrl.query(f"""
+            SELECT a.name as actor_name,
+                AVG(m.rates) as avg_rating,
+                MAX(m.rates) as best_movie_rating,
+                m.name as best_movie_name
+            FROM ACTOR a
+            JOIN ACTS ac ON a.actorID = ac.actorID
+            JOIN MOVIE m ON ac.movieID = m.movieID
+            GROUP BY a.actorID
+            ORDER BY avg_rating DESC
+            LIMIT {n};
+        """)
+        result.index = np.arange(1, n + 1)
+        return result
+
+    def fuzz_search(self, n: str) -> pd.DataFrame:
         result = self.ctrl.query(f"""
         WITH midList(mids) as (
         (SELECT DISTINCT movieID 
