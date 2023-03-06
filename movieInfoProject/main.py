@@ -7,6 +7,7 @@ def pprint(content, len = 50, char = '='):
 def printMenu():
     pprint("Menu", 25, '-')
     pprint("Top n movies: tn", 25, ' ')
+    pprint("Fuzzy Search: fs", 25, ' ')
 
 def start_app():
     funcCtrl = Functionalities()
@@ -19,6 +20,8 @@ def start_app():
         cmd = input("Enter an option: ")
         if (cmd[:2] == "tn"):
             print(funcCtrl.top_movie_by_ratings(int(cmd[3:])))
+        elif (cmd[:2] == 'fs'):
+            print(funcCtrl.fuzz_search(str(cmd[3:])))
         elif (cmd == "q"):
             print("Bye!")
             break
