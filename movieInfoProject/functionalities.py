@@ -30,6 +30,16 @@ class Functionalities:
         return result
     
     def fuzz_search (self, n:str) -> pd.DataFrame:
+        """
+       fuzz_search find the movie which contains the keyword in any of
+       author name, director name or movie name.
+
+        Args:
+            n: The key word being searched and displayed
+        
+        Returns: A Table of (movie_name, region, year, category, rating,
+                             summary, director_name, [actor_name])
+        """
         result = self.ctrl.query(f"""
         WITH midList(mids) as (
         (SELECT DISTINCT movieID 
