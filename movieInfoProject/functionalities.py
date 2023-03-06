@@ -31,6 +31,15 @@ class Functionalities:
         return result
 
     def top_actors_with_best_movie(self, n: int = 5) -> pd.DataFrame:
+        """
+        top_actors_with_best_movie find the top n actors with best movie.
+
+        Args:
+            n: The number displayed result, by default n=5
+
+        Returns: A Table of (actor, movie_name)
+        """
+
         result = self.ctrl.query(f"""
             SELECT a.name as actor_name,
                 AVG(m.rates) as avg_rating,
