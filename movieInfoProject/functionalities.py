@@ -25,7 +25,34 @@ class Functionalities:
         ORDER BY rates DESC
         LIMIT {n};
         """)
-        result.index = np.arange(1, len(result)+1)
+
+        result.index = np.arange(1, len(result) + 1)
+        return result
+
+    def top_actors_with_best_movie(self, n: int = 5) -> pd.DataFrame:
+        """
+        top_actors_with_best_movie find the top n actors with best movie.
+
+        Args:
+            n: The number displayed result, by default n=5
+
+        Returns: A Table of (actor, movie_name)
+        """
+
+        result = self.ctrl.query(f"""
+            SELECT a.name as actor_name,
+                AVG(m.rates) as avg_rating,
+                MAX(m.rates) as best_movie_rating,
+                m.name as best_movie_name
+            FROM ACTOR a
+            JOIN ACTS ac ON a.actorID = ac.actorID
+            JOIN MOVIE m ON ac.movieID = m.movieID
+            GROUP BY a.actorID
+            ORDER BY avg_rating DESC
+            LIMIT {n};
+        """)
+        
+        result.index = np.arange(1, len(result) + 1)
         return result
     
     def fuzz_search (self, n:str) -> pd.DataFrame:
@@ -64,7 +91,7 @@ class Functionalities:
             m.movieID = midList.mids
         GROUP BY(m.name);
         """)
-        result.index = np.arange(1, len(result)+1)
+        result.index = np.arange(1, len(result) + 1)
         return result
 
     def find_top_m_movies_for_n_categories (self, n: int = 5, m: int = 3) -> pd.DataFrame:
@@ -88,5 +115,5 @@ class Functionalities:
         ) AS withNum
         WHERE withNum.num <= {m};
         """)
-        result.index = np.arange(1, len(result)+1)
+        result.index = np.arange(1, len(result) + 1)
         return result
