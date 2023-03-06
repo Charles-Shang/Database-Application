@@ -1,5 +1,5 @@
 -- R6 - Top n movies by user ratings
 SELECT name as Title, rates as Rate
-FROM movie
+FROM MOVIE
 ORDER BY rates DESC
 LIMIT {{ n }};
