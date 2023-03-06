@@ -29,24 +29,19 @@ class Functionalities:
         """)
         result.index = np.arange(1, n + 1)
         return result
+    
+    def fuzz_search (self, n:str) -> pd.DataFrame:
+        """
+       fuzz_search find the movie which contains the keyword in any of
+       author name, director name or movie name.
 
-    def top_actors_with_best_movie(self, n: int = 5) -> pd.DataFrame:
-        result = self.ctrl.query(f"""
-            SELECT a.name as actor_name,
-                AVG(m.rates) as avg_rating,
-                MAX(m.rates) as best_movie_rating,
-                m.name as best_movie_name
-            FROM ACTOR a
-            JOIN ACTS ac ON a.actorID = ac.actorID
-            JOIN MOVIE m ON ac.movieID = m.movieID
-            GROUP BY a.actorID
-            ORDER BY avg_rating DESC
-            LIMIT {n};
-        """)
-        result.index = np.arange(1, n + 1)
-        return result
-
-    def fuzz_search(self, n: str) -> pd.DataFrame:
+        Args:
+            n: The key word being searched and displayed
+        
+        Returns: A Table of (movie_name, region, year, category, rating,
+                             summary, director_name, [actor_name])
+        """
+        
         result = self.ctrl.query(f"""
         WITH midList(mids) as (
         (SELECT DISTINCT movieID 
