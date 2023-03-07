@@ -40,20 +40,17 @@ class Functionalities:
         Returns: A Table of (actor, movie_name)
         """
         query = f"""
-            WITH T (actor_name, avg_rating, best_movie_rating, best_movie_name) AS (
-                SELECT C.name as actor_name,
-                    AVG(M.avg_rate) as avg_rating,
-                    MAX(M.avg_rate) as best_movie_rating,
-                    M.name as best_movie_name
-                FROM Actor A
-                JOIN Acts AC ON A.id = AC.actor_id
-                JOIN Movie M ON M.id = AC.movie_id
-                JOIN Celebrity C on A.id = C.id
-                GROUP BY A.id
-                ORDER BY avg_rating DESC
-                LIMIT {n}
-            )
-            SELECT actor_name, best_movie_name FROM T;
+            SELECT C.name as actor_name,
+                AVG(M.avg_rate) as avg_rating,
+                MAX(M.avg_rate) as best_movie_rating,
+                M.name as best_movie_name
+            FROM Actor A
+            JOIN Acts AC ON A.id = AC.actor_id
+            JOIN Movie M ON M.id = AC.movie_id
+            JOIN Celebrity C on A.id = C.id
+            GROUP BY A.id
+            ORDER BY avg_rating DESC
+            LIMIT {n}
         """
         result = self.ctrl.query(text(query))
         result.index = np.arange(1, len(result) + 1)

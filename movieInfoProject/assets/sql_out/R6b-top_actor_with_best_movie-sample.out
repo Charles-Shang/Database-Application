@@ -1,6 +1,6 @@
-  actor_name best_movie_name
-1     actor1         movie39
-2     actor2         movie39
-3     actor3         movie22
-4     actor4         movie37
-5     actor5         movie20
+  actor_name avg_rating best_movie_rating best_movie_name
+1    actor36    9.50000              10.0          movie5
+2    actor26    9.00000              10.0         movie15
+3     actor4    9.00000               9.0         movie37
+4    actor34    8.50000              10.0          movie7
+5     actor6    8.35000              10.0         movie29
