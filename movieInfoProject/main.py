@@ -1,49 +1,37 @@
 from CONSTANTS import app_name
 from functionalities import Functionalities
+import cmd
 
 
-def pprint(content, length=50, char='='):
-    print(f" {content} ".center(length, char))
+class CLI(cmd.Cmd):
 
-
-def print_menu():
-    padding = 40
-    pprint("Menu", padding, '-')
-    pprint("Top movies: tm", padding, ' ')
-    pprint("Top actors with best movie: ta", padding, ' ')
-    pprint("Top categories with top movies: tc", padding, ' ')
-    pprint("Fuzzy Search: fs", padding, ' ')
-
-
-def start_app():
+    prompt = 'dbApp> '
     func_ctrl = Functionalities()
-    pprint(f"Welcome to {app_name}")
-    print("Top 5 movies")
-    print(func_ctrl.top_movie_by_ratings(5))
-    print("Top 5 categories with best movie")
-    print(func_ctrl.find_top_m_movies_for_n_categories(5, 1))
 
-    while True:
-        print_menu()
-        args = input("Enter an option: ").split()
-        cmd = args[0]
-        if cmd == 'tm':
-            n = int(args[1])
-            print(func_ctrl.top_movie_by_ratings(n))
-        elif cmd == 'ta':
-            n = int(args[1])
-            print(func_ctrl.top_actors_with_best_movie(n))
-        elif cmd == 'tc':
-            n, m = int(args[1]), int(args[2])
-            print(func_ctrl.find_top_m_movies_for_n_categories(n, m))
-        elif cmd == 'fs':
-            key_word = str(args[1])
-            print(func_ctrl.fuzz_search(key_word))
-        elif cmd == "q":
-            print("Bye!")
-            break
-        else:
-            print("Wrong option, retry.")
+    def do_tm(self, n: int):
+        """Display the top n movies."""
+        print(CLI.func_ctrl.top_movie_by_ratings(n))
+
+    def do_ta(self, n: int):
+        """Display the top n actors along with their best movies."""
+        n = 5 if not n else int(n)
+        print(CLI.func_ctrl.top_actors_with_best_movie(n))
+
+    def do_tc(self, n: int, m: int):
+        """Display the top m movies for n categories."""
+        print(CLI.func_ctrl.find_top_m_movies_for_n_categories(n, m))
+
+    def do_fs(self, s: str):
+        """Fuzzy search."""
+        print(CLI.func_ctrl.fuzz_search(s))
+
+    def do_q(self, _):
+        """Exit the program."""
+        print("Bye!")
+        return True
 
 
-start_app()
+if __name__ == "__main__":
+    print(f"Welcome to {app_name}!")
+    CLI().cmdloop()
+

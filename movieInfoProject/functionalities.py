@@ -30,7 +30,7 @@ class Functionalities:
         result.index = np.arange(1, len(result) + 1)
         return result
 
-    def top_actors_with_best_movie(self, n: int = 5) -> pd.DataFrame:
+    def top_actors_with_best_movie(self, n: int) -> pd.DataFrame:
         """
         Return the top n actors and their best movie. 
 
