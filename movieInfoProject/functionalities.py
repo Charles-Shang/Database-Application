@@ -69,7 +69,7 @@ class Functionalities:
         result.index = np.arange(1, n + 1)
         return result
 
-    def find_top_n_movies_for_m_categories (self, n:str) -> pd.DataFrame:
+    def find_top_n_movies_for_m_categories (self, m: int = 5, n : int = 3) -> pd.DataFrame:
         """
         Top m movie category of average ratings and n top movies in each category
 
