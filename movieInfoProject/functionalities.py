@@ -137,7 +137,7 @@ class Functionalities:
         result.index = np.arange(1, len(result) + 1)
         return result
 
-    def find_top_m_movies_for_n_categories (self, n: int = 5, m: int = 3) -> pd.DataFrame:
+    def find_top_n_movies_for_m_categories (self, m: int = 3, n : int = 5) -> pd.DataFrame:
         """
         Top n movie category of average ratings and m top movies in each category
 
@@ -149,7 +149,9 @@ class Functionalities:
         """
         
         result = self.ctrl.query(f"""
-        WITH temporaryTop3Category(category, averageRating) as
+        WITH MOVIE(name, category, rates) as
+        (SELECT Movie.name, Movie_category.category, Movie.avg_rate FROM Movie, Movie_category WHERE Movie.id = Movie_category.movie_id),
+        temporaryTop3Category(category, averageRating) as
         (SELECT category, AVG(rates) FROM MOVIE GROUP BY category ORDER BY AVG(rates) desc LIMIT {n})
         SELECT category, averageRating, name, rates FROM (
         SELECT category, averageRating, name, rates, ROW_NUMBER() OVER (PARTITION BY MOVIE.category ORDER BY MOVIE.rates DESC) AS num
