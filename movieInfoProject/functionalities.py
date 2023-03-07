@@ -36,36 +36,36 @@ class Functionalities:
 
         Args: [all string type arguments use empty string "" to indicates no input, int type use 0 to indicates no input unless specified]
             region:       string type, indicates the region where the movies are produced
-            year:         string type, indicates the year where the movies are produced
+            year:         int type, indicates the year where the movies are produced
             category:     string type, indicates the category that the movies belong
             letter:       string type, indicates the first letter of the movies' names, if letter is "ALL", then ignore
             sortedBy:     string type, indicates the way we want to sort our result by
             limit:        int type, indicates the number of rows we want to get, default value is 10
             offset:       int type, indicates the offset
         """
-        queryStatement = """SELECT DISTINCT movieID, name, region, year, GROUP_CONCAT( DISTINCT category ) AS allCategory, avgRate, introduction
-        FROM Movie LEFT JOIN Category ON Movie.movieID=Category.movieID"""
+        queryStatement = """SELECT DISTINCT ID, name, region, year, GROUP_CONCAT( DISTINCT category ) AS allCategory, avg_rate, introduction
+        FROM Movie LEFT JOIN Movie_category ON Movie.ID=Movie_category.movie_id"""
 
         hasWhere = False
-        if (region != "" and region != "ALL") or (year != "" and year != "ALL") or (letter != "" and letter != "ALL"):
+        if (region != "" and region != "ALL") or year != 0 or (letter != "" and letter != "ALL"):
             queryStatement += " WHERE"
             hasWhere = True
         if region != "" and region != "ALL":
-            queryStatement += " region=" + region + " AND"
-        if year != "" and year != "ALL":
-            queryStatement += " year=" + year + " AND"
+            queryStatement += " region='" + region + "' AND"
+        if year != 0:
+            queryStatement += " year=" + str(year) + " AND"
         if letter != "" and letter != "ALL":
             queryStatement += " name REGEXP '^" + letter + "' AND"
         
         if hasWhere:
             # remove last AND
             queryStatement = queryStatement[:-4]
-        queryStatement += " GROUP BY movieID"
+        queryStatement += " GROUP BY ID"
         if category != "" and category != "ALL":
-            queryStatement += " HAVING COUNT(case when category=" + category + " then 1 else 0 end) > 0"
+            queryStatement += " HAVING COUNT(case when category='" + category + "' then 1 else 0 end) > 0"
 
         if sortedBy == "rating":
-            queryStatement += " ORDER BY avgRate DESC"
+            queryStatement += " ORDER BY avg_rate DESC"
         
         queryStatement += " LIMIT " + str(limit) + " OFFSET " + str(offset) + ";"
         result = self.ctrl.query(queryStatement)
