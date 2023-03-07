@@ -1,12 +1,17 @@
--- R7 - Top m movie category of average ratings and n top movies in each category
 category |averageRating|name   |rates|
 ---------+-------------+-------+-----+
 category9|      7.25000|movie30| 10.0|
 category9|      7.25000|movie20|  9.0|
 category9|      7.25000|movie15|  8.0|
-category5|      5.16667|movie3 |  9.0|
 category5|      5.16667|movie5 |  9.0|
+category5|      5.16667|movie3 |  9.0|
 category5|      5.16667|movie34|  6.5|
 category2|      4.38889|movie29| 10.0|
 category2|      4.38889|movie5 |  9.0|
 category2|      4.38889|movie32|  6.5|
+category4|      4.15000|movie38|  9.0|
+category4|      4.15000|movie37|  9.0|
+category4|      4.15000|movie40|  7.0|
+category8|      3.91667|movie28| 10.0|
+category8|      3.91667|movie33|  9.5|
+category8|      3.91667|movie26|  2.0|

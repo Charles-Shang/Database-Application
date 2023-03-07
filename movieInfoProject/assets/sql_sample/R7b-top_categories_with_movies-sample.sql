@@ -2,7 +2,7 @@
 WITH MOVIE(name, category, rates) as
 (SELECT Movie.name, Movie_category.category, Movie.avg_rate FROM Movie, Movie_category WHERE Movie.id = Movie_category.movie_id),
 temporaryTop3Category(category, averageRating) as
-(SELECT category, AVG(rates) FROM MOVIE GROUP BY category ORDER BY AVG(rates) desc LIMIT 3)
+(SELECT category, AVG(rates) FROM MOVIE GROUP BY category ORDER BY AVG(rates) desc LIMIT 5)
 SELECT category, averageRating, name, rates FROM (
 SELECT category, averageRating, name, rates, ROW_NUMBER() OVER (PARTITION BY MOVIE.category ORDER BY MOVIE.rates DESC) AS num
 FROM temporaryTop3Category NATURAL JOIN MOVIE 
