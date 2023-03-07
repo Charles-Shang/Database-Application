@@ -41,8 +41,8 @@ class Functionalities:
         """
         query = f"""
             SELECT C.name as actor_name,
-                AVG(M.avg_rate) as avg_rating,
                 MAX(M.avg_rate) as best_movie_rating,
+                AVG(M.avg_rate) as avg_rating,
                 M.name as best_movie_name
             FROM Actor A
             JOIN Acts AC ON A.id = AC.actor_id
