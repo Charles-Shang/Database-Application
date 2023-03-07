@@ -1,0 +1,11 @@
+-- filter movie by category='category10'
+1,movie1,region26,1879,category10,0.0,introduction1
+2,movie2,region2,2003,"category2,category3,category6",1.0,introduction2
+3,movie3,region19,1833,category5,9.0,introduction3
+4,movie4,region8,1899,category4,0.0,introduction4
+5,movie5,region23,1964,"category2,category5",9.0,introduction5
+6,movie6,region11,1909,category6,6.0,introduction6
+7,movie7,region8,1861,category7,6.0,introduction7
+8,movie8,region35,1943,category2,5.0,introduction8
+9,movie9,region20,1998,category5,3.5,introduction9
+10,movie10,region26,1817,"category6,category7",3.0,introduction10
