@@ -7,23 +7,38 @@ def pprint(content, length=50, char='='):
 
 
 def print_menu():
-    pprint("Menu", 25, '-')
-    pprint("Top n movies: tn", 25, ' ')
-    pprint("Fuzzy Search: fs", 25, ' ')
+    padding = 40
+    pprint("Menu", padding, '-')
+    pprint("Top movies: tm", padding, ' ')
+    pprint("Top actors with best movie: ta", padding, ' ')
+    pprint("Top categories with top movies: tc", padding, ' ')
+    pprint("Fuzzy Search: fs", padding, ' ')
 
 
 def start_app():
     func_ctrl = Functionalities()
     pprint(f"Welcome to {app_name}")
     print("Top 5 movies")
+    print(func_ctrl.top_movie_by_ratings(5))
+    print("Top 5 categories with best movie")
+    print(func_ctrl.find_top_m_movies_for_n_categories(5, 1))
 
     while True:
         print_menu()
-        cmd = input("Enter an option: ")
-        if cmd[:2] == "tn":
-            print(func_ctrl.top_movie_by_ratings(int(cmd[3:])))
-        elif cmd[:2] == 'fs':
-            print(func_ctrl.fuzz_search(str(cmd[3:])))
+        args = input("Enter an option: ").split()
+        cmd = args[0]
+        if cmd == 'tm':
+            n = int(args[1])
+            print(func_ctrl.top_movie_by_ratings(n))
+        elif cmd == 'ta':
+            n = int(args[1])
+            print(func_ctrl.top_actors_with_best_movie(n))
+        elif cmd == 'tc':
+            n, m = int(args[1]), int(args[2])
+            print(func_ctrl.find_top_m_movies_for_n_categories(n, m))
+        elif cmd == 'fs':
+            key_word = str(args[1])
+            print(func_ctrl.fuzz_search(key_word))
         elif cmd == "q":
             print("Bye!")
             break
