@@ -113,27 +113,26 @@ class Functionalities:
 
         result = self.ctrl.query(f"""
         WITH midList(mids) as (
-        (SELECT DISTINCT movieID 
-        FROM MOVIE
-        WHERE name LIKE '%%{n}%%')
-        UNION 
-        (SELECT DISTINCT movieID
-        FROM ACTS natural join ACTOR
-        WHERE name LIKE '%%{n}%%')
-        UNION 
-        (SELECT DISTINCT movieID
-        FROM DIRECTOR natural join DIRECTS
-        WHERE name LIKE '%%{n}%%')
-        )
+(SELECT DISTINCT Movie.id
+ FROM Movie
+ WHERE Movie.name LIKE '%%{n}%%')
+ UNION 
+ (SELECT DISTINCT movie_id
+ FROM  Celebrity c  join Acts a on c.id = a.actor_id
+ WHERE c.name LIKE '%%{n}%%')
+ UNION 
+ (SELECT DISTINCT Movie.id
+ FROM Celebrity c2  JOIN Movie on Movie.director_id = c2.id
+ WHERE c2.name LIKE '%%{n}%%')
+)
 
-        SELECT m.name as Title, m.region as Region, m.year as Year,
-        m.category as Category, m.rates as Rating, m.summary as Summary,
-        d.name as Directors, GROUP_CONCAT(a.name) as Actors
-        FROM MOVIE as m, midList,ACTOR a, ACTS ar, DIRECTOR d, DIRECTS dr 
-        WHERE ar.actorID  = a.actorID and ar.movieID = m.movieID and 
-            dr.directorID  = d.directorID and dr.movieID = m.movieID and
-            m.movieID = midList.mids
-        GROUP BY(m.name);
+SELECT m.name as title, m.region, m.year, m.avg_rate , m.introduction , d.name as director_name,
+GROUP_CONCAT(a.name) as actor_name
+FROM Movie as m, midList,Actor natural join Celebrity as a, Acts ar, Director natural join Celebrity as d
+WHERE ar.actor_id  = a.id  and ar.movie_id  = m.id  and m.director_id  = d.id  and m.id  = midList.mids
+GROUP BY(m.name);
+
+
         """)
         result.index = np.arange(1, len(result) + 1)
         return result
