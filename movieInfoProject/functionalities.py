@@ -62,7 +62,7 @@ class Functionalities:
             queryStatement = queryStatement[:-4]
         queryStatement += " GROUP BY ID"
         if category != "" and category != "ALL":
-            queryStatement += " HAVING COUNT(case when category='" + category + "' then 1 else 0 end) > 0"
+            queryStatement += " HAVING SUM(case when category='" + category + "' then 1 else 0 end) > 0"
 
         if sortedBy == "rating":
             queryStatement += " ORDER BY avg_rate DESC"
