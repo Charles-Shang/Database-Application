@@ -3,6 +3,7 @@ from mysqlCtrl import MysqlCtrl
 import pandas as pd
 import numpy as np
 
+
 class Functionalities:
 
     def __init__(self):
@@ -10,7 +11,7 @@ class Functionalities:
 
     # Top n movies by user ratings
     # n is 5 by default
-    def top_movie_by_ratings (self, n : int = 5) -> pd.DataFrame:
+    def top_movie_by_ratings(self, n: int = 5) -> pd.DataFrame:
         """
         top_movie_by_ratings find the top n movies by user ratings.
 
@@ -40,6 +41,7 @@ class Functionalities:
         Returns: A Table of (movie_name, region, year, category, rating,
                              summary, director_name, [actor_name])
         """
+        
         result = self.ctrl.query(f"""
         WITH midList(mids) as (
 (SELECT DISTINCT Movie.id
@@ -63,5 +65,5 @@ GROUP BY(m.name);
 
 
         """)
-        
+        result.index = np.arange(1, n + 1)
         return result
