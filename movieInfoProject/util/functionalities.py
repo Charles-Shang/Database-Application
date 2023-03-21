@@ -9,6 +9,9 @@ class Functionalities:
 
     def __init__(self):
         self.ctrl = MysqlCtrl(user, password, host, port, sample_database_name)
+    
+    def count_entries(self, table_name: str) -> int:
+        return int(self.ctrl.query(f"SELECT count(*) FROM {table_name};").iloc[0][0])
 
     def top_movie_by_ratings(self, n: int = 5) -> pd.DataFrame:
         """
