@@ -29,6 +29,10 @@ class CLI(cmd.Cmd):
         """Filters movies by region, year, category, letter then sort movies by sortedBy, where sortedBy"""
         print(self.func_ctrl.movie_filter_and_sort(region, year, category, letter, sortedBy, n))
 
+    def do_g(self):
+        print(self.func_ctrl.graph_summary())
+        
+    
     def do_q(self, _):
         """Exit the program."""
         print("Bye!")

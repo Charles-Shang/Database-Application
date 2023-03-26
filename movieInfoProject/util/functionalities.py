@@ -176,3 +176,25 @@ class Functionalities:
         """)
         result.index = np.arange(1, len(result) + 1)
         return result
+    def graph_summary(self) ->pd.DataFrame:
+        result = self.ctrl.query(f"""
+            SELECT year, count(MovieID) AS NumOfMovie
+            FROM Movie
+            ORDER BY year
+            GROUP BY year
+            LIMIT 20""")
+        data = []
+        year = []
+
+        for row in result:
+            data.append(int(row[1]))
+            year.append(int(row[0]))
+        
+        #axes and labels
+        plt.figure(figsize=(10,5))
+        plt.bar(year,data,width = 0.4)
+        plt.ylabel('Number of Movie')
+        plt.xlabel('Year')
+        plt.title('Number of Movie in recent 20 years')
+        plt.show()
+        return result
