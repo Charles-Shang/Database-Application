@@ -18,3 +18,5 @@ class MysqlCtrl:
             connection.execution_options(isolation_level="AUTOCOMMIT")
             result = connection.execute(sql_stmt)
         return pd.DataFrame(result.fetchall())
+    
+    

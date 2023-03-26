@@ -39,6 +39,8 @@ def start_app():
         elif cmd == 'fs':
             key_word = str(args[1])
             print(func_ctrl.fuzz_search(key_word))
+        elif cmd == 'g':
+            print(func_ctrl.graph_summary())
         elif cmd == "q":
             print("Bye!")
             break

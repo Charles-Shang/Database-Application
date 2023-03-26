@@ -14,9 +14,11 @@ WITH midList(mids) as (
  WHERE c2.name LIKE '%5%')
 )
 
-SELECT m.name as title, m.region, m.year, m.avg_rate , m.introduction , d.name as director_name,
-GROUP_CONCAT(a.name) as actor_name
-FROM Movie as m, midList,Actor natural join Celebrity as a, Acts ar, Director natural join Celebrity as d
+SELECT m.name as title, m.region, m.year, m.avg_rate , m.introduction , m.category, d.name as director_name,
+GROUP_CONCAT(DISTINCT a.name) as actor_name
+FROM (Select * from Movie m1 inner join Movie_category mc2 on mc2.movie_id = m1.id) as m,
+	midList,Actor natural join Celebrity as a, Acts ar, Director natural join Celebrity as d
 WHERE ar.actor_id  = a.id  and ar.movie_id  = m.id  and m.director_id  = d.id  and m.id  = midList.mids
 GROUP BY(m.name);
+
 
