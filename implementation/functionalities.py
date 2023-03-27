@@ -2,7 +2,6 @@ from CONSTANTS import user, password, host, port, sample_database_name, TABLES
 from mysqlCtrl import MysqlCtrl
 import pandas as pd
 import numpy as np
-from sqlalchemy import text
 
 
 class Functionalities:
