@@ -20,7 +20,7 @@ class CLI(cmd.Cmd):
 
     base_location = "Home"
     location = [base_location]
-    intro = app_title + f"Hello! Welcome to {app_name}!"
+    intro = app_title + f"Hello! Welcome to {app_name}! This is a database of information related to"
     prompt = formatTool.underline(location[-1], "pink") + formatTool.yellow("> ")
     func_ctrl = Functionalities()
 
