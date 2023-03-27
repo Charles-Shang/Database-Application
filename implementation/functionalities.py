@@ -242,6 +242,20 @@ class Functionalities:
         Return:
             boolean, true if insertion success, false otherwise
         """
+        insertStatement = """START TRANSACTION;
+        INSERT INTO RateBy (movie_id, user_id)
+        SELECT {movie_id} AS movie_id, {user_id} AS user_id
+        FROM RateBy
+        WHERE (movie_id = {movie_id} AND user_id = {user_id})
+        HAVING COUNT(*) = 0;
+        INSERT INTO Rating (id, time, value, comment, movie_id, user_id)
+        VALUES ({id}, NOW(), {value}, '{comment}', {movie_id}, {user_id});
+        COMMIT;"""
+
+        insertStatement = insertStatement.format(movie_id=movie_id, user_id=user_id, id=rating_id, value=rating_value, comment=comment)
+        status = self.ctrl.execute(insertStatement)
+        return status
+        
 
     def user_rating_delete(rating_id) -> bool:
         """
@@ -251,6 +265,9 @@ class Functionalities:
         Return:
             true if deletion is successful, false otherwise
         """
+        deleteStatement = "DELETE FROM Rating WHERE id=" + str(rating_id) + ";"
+        status = self.ctrl.execute(deleteStatement)
+        return status
 
     def user_rating_update(rating_id, new_rating_value, new_comment) -> bool:
         """
@@ -262,3 +279,7 @@ class Functionalities:
         Return:
             true if update is successful, false otherwise
         """
+        updateStatement = "UPDATE Rating SET value = {new_rating_value}, comment = '{new_comment}' WHERE id = {rating_id};"
+        updateStatement = updateStatement.format(new_rating_value=new_rating_value, new_comment=new_comment, rating_id=rating_id)
+        status = self.ctrl.execute(updateStatement)
+        return status
