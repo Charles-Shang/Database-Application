@@ -12,7 +12,7 @@ class MysqlCtrl:
     #         connection.execution_options(isolation_level="AUTOCOMMIT")
     #         connection.execute(sql_stmt)
 
-    def query(self, sql_stmt):
+    def query(self, sql_stmt,args):
         # print(sql_stmt)
         with self.engine.connect() as connection:
             connection.execution_options(isolation_level="AUTOCOMMIT")
