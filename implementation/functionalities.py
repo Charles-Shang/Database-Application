@@ -2,8 +2,12 @@ from CONSTANTS import user, password, host, port, sample_database_name, TABLES
 from mysqlCtrl import MysqlCtrl
 import pandas as pd
 import numpy as np
+<<<<<<< HEAD:movieInfoProject/util/functionalities.py
 from sqlalchemy import text
 from sqlalchemy import create_engine
+=======
+
+>>>>>>> main:implementation/functionalities.py
 
 class Functionalities:
     def __init__(self):
