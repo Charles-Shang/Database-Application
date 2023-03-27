@@ -2,11 +2,9 @@ from CONSTANTS import user, password, host, port, sample_database_name, TABLES
 from mysqlCtrl import MysqlCtrl
 import pandas as pd
 import numpy as np
-from sqlalchemy import text
-
+import matplotlib.pyplot as plt
 
 class Functionalities:
-
     def __init__(self):
         self.ctrl = MysqlCtrl(user, password, host, port, sample_database_name)
     
@@ -29,6 +27,7 @@ class Functionalities:
             ORDER BY avg_rate DESC
             LIMIT {n};
         """
+        
         result = self.ctrl.query(queryStatement)
         result.index = np.arange(1, len(result) + 1)
         return result
@@ -176,77 +175,22 @@ class Functionalities:
         """)
         result.index = np.arange(1, len(result) + 1)
         return result
+    
+    def graph_summary(self,n:int = 5) ->pd.DataFrame:
+        result = self.ctrl.query(f"""
+            SELECT year, count(MovieID) AS NumOfMovie FROM Movie GROUP BY year ORDER BY year DESC LIMIT {n}""")
+        data = []
+        year = []
 
-
-    def employee_permission_authentication(employee_id, action, tables) -> bool:
-        """
-        check whether an employee has the permission to do certain action
-
-        Args:
-            employee_id: integer, employee's id as name suggested
-            action: string, must be one of {"select", "insert", "update", "delete"}
-                    as this function doesn't check correctness, case does not matter (can be capital or lower case)
-            tables: list of strings, the table/view names, len(list) >= 1
-        """
-        total_count = len(tables) # count the total number of tables that need permission, should match the # of records returned
-        if total_count == 0:
-            return False
-
-        queryStatement = """SELECT Permits.employee_id, Permission.name
-        FROM Permission LEFT JOIN Permits ON Permits.permission_id=Permission.id
-        WHERE Permits.employee_id="""
-        queryStatement += str(employee_id) + "AND (Permission.name IN ("
-        permissionNames = ""
-        action = action.upper()
-
-        if action == "SELECT":
-            permissionNames = "view_" + tables[0].lower() + "_db"
-            for i in range(1, len(tables)):
-                permissionNames += ", view_" + tables[i].lower() + "_db"
-            permissionNames += ");"
-        else:
-            permissionNames = "update_" + tables[0].lower() + "_db"
-            for i in range(1, len(tables)):
-                permissionNames += ", update_" + tables[i].lower() + "_db"
-            permissionNames += ");"
+        for row in result:
+            data.append(int(row[1]))
+            year.append(int(row[0]))
         
-        result = self.ctrl.query(queryStatement)
-        return len(result) == total_count
-
-
-    def user_rating_insert(rating_id, rating_value, comment, movie_id, user_id) -> bool:
-        """
-        insert a rating record
-        Args:
-            rating_id: int, rating_id, must be unique (generation must guarantee that it has not occured in the db)
-            rating_value: rating value
-            comment: string, user's comment
-            movie_id: int, movie_id user comments on
-            user_id: int, user's id
-        Return:
-            boolean, true if insertion success, false otherwise
-        """
-
-    def user_rating_delete(rating_id) -> bool:
-        """
-        delete a rating record
-        Args:
-            rating_id: int, the rating_id of the rating to be deleted
-        Return:
-            true if deletion is successful, false otherwise
-        """
-
-    def user_rating_update(rating_id, new_rating_value, new_comment) -> bool:
-        """
-        update a rating record
-        Args:
-            rating_id: int, the rating_id of the rating to be deleted
-            new_rating_value: int, the new rating value
-            new_comment: string, the new comment
-        Return:
-            true if update is successful, false otherwise
-        """
-        
-
-
-
+        #axes and labels
+        plt.figure(figsize=(10,5))
+        plt.bar(year,data,width = 0.4)
+        plt.ylabel('Number of Movie')
+        plt.xlabel('Year')
+        plt.title('Number of Movie in recent 20 years')
+        plt.show()
+        return result
