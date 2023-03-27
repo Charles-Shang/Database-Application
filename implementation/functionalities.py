@@ -2,12 +2,7 @@ from CONSTANTS import user, password, host, port, sample_database_name, TABLES
 from mysqlCtrl import MysqlCtrl
 import pandas as pd
 import numpy as np
-<<<<<<< HEAD:movieInfoProject/util/functionalities.py
-from sqlalchemy import text
-from sqlalchemy import create_engine
-=======
-
->>>>>>> main:implementation/functionalities.py
+import matplotlib.pyplot as plt
 
 class Functionalities:
     def __init__(self):
@@ -26,12 +21,12 @@ class Functionalities:
         Returns: A Table of (movie_name, rating)
         """
 
-        queryStatement = text("""
+        queryStatement = f"""
             SELECT name as Title, avg_rate as Rate
             FROM Movie
             ORDER BY avg_rate DESC
-            LIMIT :n;
-        """)
+            LIMIT {n};
+        """
         
         result = self.ctrl.query(queryStatement)
         result.index = np.arange(1, len(result) + 1)
@@ -59,7 +54,7 @@ class Functionalities:
             JOIN Celebrity C on A.id = C.id
             GROUP BY A.id
             ORDER BY avg_rating DESC
-            LIMIT :n;
+            LIMIT {n};
         """
         result = self.ctrl.query(queryStatement)
         result.index = np.arange(1, len(result) + 1)
