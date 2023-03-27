@@ -1,15 +1,7 @@
-title  |region  |year|avg_rate|introduction  |director_name|actor_name                             |
--------+--------+----+--------+--------------+-------------+---------------------------------------+
-movie15|region12|2003|     0.0|introduction15|director15   |actor16,actor26,actor40                |
-movie16|region16|1979|     0.0|introduction16|director16   |actor24,actor25                        |
-movie2 |region2 |2003|     0.0|introduction2 |director2    |actor25,actor39                        |
-movie20|region7 |1837|     0.0|introduction20|director20   |actor5,actor12,actor21                 |
-movie25|region28|1889|     0.0|introduction25|director20   |actor16,actor12                        |
-movie26|region39|1857|     0.0|introduction26|director4    |actor13,actor15,actor40                |
-movie28|region25|1972|     0.0|introduction28|director7    |actor36,actor34,actor26,actor25,actor13|
-movie32|region18|1971|     0.0|introduction32|director5    |actor9                                 |
-movie34|region3 |1900|     0.0|introduction34|director3    |actor11,actor7,actor5                  |
-movie35|region17|1859|     0.0|introduction35|director19   |actor6                                 |
-movie36|region7 |1810|     0.0|introduction36|director7    |actor30,actor5                         |
-movie5 |region23|1964|     0.0|introduction5 |director5    |actor36                                |
-movie6 |region11|1909|     0.0|introduction6 |director6    |actor35                                |
+title                               |region        |year|avg_rate|category|director_name  |actor_name                                                |introduction                                                                                                                                                                                                                                                   |
+------------------------------------+--------------+----+--------+--------+---------------+----------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+15 Minutes                          |United States |1998|     5.8|Action  |John Herzfeld  |Avery Brooks,Edward Burns,Kelsey Grammer,Robert Niro      |15 Minutes is a 2001 American satirical buddy cop action thriller film directed and written by John Herzfeld and starring Robert De Niro and Edward Burns. Its story revolves around a homicide detective (De Niro) and a fire marshal (Burns) who join forces |
+Formula 51                          |United Kingdom|2007|     5.6|Action  |Ronny Yu       |Emily Mortimer,Nigel Whitmey,Robert Carlyle,Samuel Jackson| The 51st State (also known as Formula 51) is a 2001 action comedy film directed by Ronny Yu, written by Stel Pavlou, and starring Samuel L. Jackson, Robert Carlyle, Emily Mortimer, Ricky Tomlinson, Sean Pertwee, Rhys Ifans, Stephen Walters and Meat Loaf.|
+My 5 Wives                          |United States |1990|     5.5|Comedy  |Sidney J. Furie|Andrew Clay,John Byner,Molly Shannon,Rodney Dangerfield   |My 5 Wives is a 2000 American comedy film, which was directed by Sidney J. Furie and starring Rodney Dangerfield. After his third marriage ends in divorce, wealthy Los Angeles land developer Monte Peterson travels to Utah hoping to open a ski resort. He c|
+Operation Delta Force 5: Random Fire|United States |2004|     5.6|Action  |Yossi Wein     |Anthony Bishop,Gray Lawson,Todd Jensen,Trae Thomas        |Operation Delta Force 5: Random Fire is a 2000 American direct-to-video action film, starring Trae Thomas, Todd Jensen and Anthony Bishop. It was directed by Yossi Wein. An elite task force is assigned to handle a Middle-Eastern terrorist mastermind who i|
+U-571                               |United States |1999|     5.6|Action  |Jonathan Mostow|Bill Paxton,Harvey Keitel,Jon Jovi,Matthew McConaughey    | U-571 is a 2000 submarine film directed by Jonathan Mostow from a screenplay he co-wrote with Sam Montgomery and David Ayer. The film stars Matthew McConaughey, Harvey Keitel, Bill Paxton, Jon Bon Jovi, Jake Weber and Matthew Settle. The film, telling th|
