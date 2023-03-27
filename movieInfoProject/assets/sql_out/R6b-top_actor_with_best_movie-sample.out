@@ -1,8 +1,0 @@
--- R6a - Top 5 actors with best movie
-actor_name|avg_rating|best_movie_rating|best_movie_name|
-----------+----------+-----------------+---------------+
-actor31   |   9.70000|              9.7|movie5         |
-actor16   |   9.70000|              9.7|movie5         |
-actor4    |   8.20000|              9.7|movie3         |
-actor12   |   8.00000|              8.0|movie9         |
-actor25   |   8.00000|              8.0|movie9         |
