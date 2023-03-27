@@ -1,17 +1,17 @@
-category |averageRating|name   |rates|
----------+-------------+-------+-----+
-category9|      7.25000|movie30| 10.0|
-category9|      7.25000|movie20|  9.0|
-category9|      7.25000|movie15|  8.0|
-category5|      5.16667|movie5 |  9.0|
-category5|      5.16667|movie3 |  9.0|
-category5|      5.16667|movie34|  6.5|
-category2|      4.38889|movie29| 10.0|
-category2|      4.38889|movie5 |  9.0|
-category2|      4.38889|movie32|  6.5|
-category4|      4.15000|movie38|  9.0|
-category4|      4.15000|movie37|  9.0|
-category4|      4.15000|movie40|  7.0|
-category8|      3.91667|movie28| 10.0|
-category8|      3.91667|movie33|  9.5|
-category8|      3.91667|movie26|  2.0|
+category  |averageRating|name   |rates|
+----------+-------------+-------+-----+
+category9 |      7.25000|movie30| 10.0|
+category9 |      7.25000|movie20|  9.0|
+category9 |      7.25000|movie15|  8.0|
+category5 |      4.71667|movie3 |  9.0|
+category5 |      4.71667|movie34|  6.5|
+category5 |      4.71667|movie5 |  6.3|
+category4 |      4.15000|movie37|  9.0|
+category4 |      4.15000|movie38|  9.0|
+category4 |      4.15000|movie40|  7.0|
+category2 |      4.08889|movie29| 10.0|
+category2 |      4.08889|movie32|  6.5|
+category2 |      4.08889|movie5 |  6.3|
+category10|      4.00000|movie20|  9.0|
+category10|      4.00000|movie40|  7.0|
+category10|      4.00000|movie1 |  5.0|

@@ -2,7 +2,7 @@ from CONSTANTS import user, password, host, port, sample_database_name, TABLES
 from mysqlCtrl import MysqlCtrl
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 class Functionalities:
 
@@ -69,31 +69,32 @@ class Functionalities:
         
         result = self.ctrl.query(f"""
         WITH midList(mids) as (
-(SELECT DISTINCT Movie.id
- FROM Movie
- WHERE Movie.name LIKE '%%{n}%%')
- UNION 
- (SELECT DISTINCT movie_id
- FROM  Celebrity c  join Acts a on c.id = a.actor_id
- WHERE c.name LIKE '%%{n}%%')
- UNION 
- (SELECT DISTINCT Movie.id
- FROM Celebrity c2  JOIN Movie on Movie.director_id = c2.id
- WHERE c2.name LIKE '%%{n}%%')
-)
+        (SELECT DISTINCT movieID 
+        FROM MOVIE
+        WHERE name LIKE '%%{n}%%')
+        UNION 
+        (SELECT DISTINCT movieID
+        FROM ACTS natural join ACTOR
+        WHERE name LIKE '%%{n}%%')
+        UNION 
+        (SELECT DISTINCT movieID
+        FROM DIRECTOR natural join DIRECTS
+        WHERE name LIKE '%%{n}%%')
+        )
 
-SELECT m.name as title, m.region, m.year, m.avg_rate , m.introduction , d.name as director_name,
-GROUP_CONCAT(a.name) as actor_name
-FROM Movie as m, midList,Actor natural join Celebrity as a, Acts ar, Director natural join Celebrity as d
-WHERE ar.actor_id  = a.id  and ar.movie_id  = m.id  and m.director_id  = d.id  and m.id  = midList.mids
-GROUP BY(m.name);
-
-
+        SELECT m.name as Title, m.region as Region, m.year as Year,
+        m.category as Category, m.rates as Rating, m.summary as Summary,
+        d.name as Directors, GROUP_CONCAT(a.name) as Actors
+        FROM MOVIE as m, midList,ACTOR a, ACTS ar, DIRECTOR d, DIRECTS dr 
+        WHERE ar.actorID  = a.actorID and ar.movieID = m.movieID and 
+            dr.directorID  = d.directorID and dr.movieID = m.movieID and
+            m.movieID = midList.mids
+        GROUP BY(m.name);
         """)
         result.index = np.arange(1, len(result) + 1)
         return result
 
-    def find_top_m_movies_for_n_categories (self, n: int = 5, m: int = 3) -> pd.DataFrame:
+    def find_top_n_movies_for_m_categories (self, m: int = 3, n : int = 5) -> pd.DataFrame:
         """
         Top n movie category of average ratings and m top movies in each category
 
@@ -105,7 +106,9 @@ GROUP BY(m.name);
         """
         
         result = self.ctrl.query(f"""
-        WITH temporaryTop3Category(category, averageRating) as
+        WITH MOVIE(name, category, rates) as
+        (SELECT Movie.name, Movie_category.category, Movie.avg_rate FROM Movie, Movie_category WHERE Movie.id = Movie_category.movie_id),
+        temporaryTop3Category(category, averageRating) as
         (SELECT category, AVG(rates) FROM MOVIE GROUP BY category ORDER BY AVG(rates) desc LIMIT {n})
         SELECT category, averageRating, name, rates FROM (
         SELECT category, averageRating, name, rates, ROW_NUMBER() OVER (PARTITION BY MOVIE.category ORDER BY MOVIE.rates DESC) AS num
@@ -117,25 +120,68 @@ GROUP BY(m.name);
         result.index = np.arange(1, len(result) + 1)
         return result
     
-    def graph_summary(self) ->pd.DataFrame:
-        result = self.ctrl.query(f"""
-            SELECT year, count(MovieID) AS NumOfMovie
-            FROM Movie
-            ORDER BY year
-            GROUP BY year
-            LIMIT 20""")
-        data = []
-        year = []
+    def director_relative_rating (self) -> pd.DataFrame:
+        """
+        The relative rating for all directors (based on the average rating of the average rating for all the movies they directed)
 
-        for row in result:
-            data.append(int(row[1]))
-            year.append(int(row[0]))
+        Args:
+            none
         
-        #axes and labels
-        plt.figure(figsize=(10,5))
-        plt.bar(year,data,width = 0.4)
-        plt.ylabel('Number of Movie')
-        plt.xlabel('Year')
-        plt.title('Number of Movie in recent 20 years')
-        plt.show()
+        Returns: A Table of (director_id, first_name, last_name, relative_rating)
+        """
+        
+        result = self.ctrl.query(f"""
+        WITH AverageRating(movie_id, average_rating) AS
+        (
+        SELECT RateBy.movie_id, AVG(Rating.value)
+        FROM RateBy, Rating
+        WHERE RateBy.movie_id = Rating.movie_id AND RateBy.user_id = Rating .user_id AND Rating.value IS NOT NULL
+        GROUP BY Rating.movie_id
+        )
+        SELECT C.id AS director_id, C.first_name AS first_name, C.last_name AS last_name, AVG(A.average_rating) AS relative_rating
+        FROM Celebrity AS C, Movie as M, AverageRating as A
+        WHERE C.id = M.director_id  AND A.movie_id = M.id
+        GROUP BY C.id 
+        ORDER BY relative_rating DESC
+        """)
+        result.index = np.arange(1, len(result) + 1)
         return result
+    
+    def number_of_movies_by_good_directors_per_year (self, n : float = 0.1) -> pd.DataFrame:
+        """
+        The number of movies released directed by directors with relative rating of top (n*100)% every year
+
+        Args:
+            n: The percentage of the directors (in decimal) that counts into the number of movies per year
+        
+        Returns: A Table of (year, num)
+        """
+        
+        result = self.ctrl.query(f"""
+        WITH AverageRating(movie_id, average_rating) AS
+        (
+        SELECT RateBy.movie_id, AVG(Rating.value)
+        FROM RateBy, Rating
+        WHERE RateBy.movie_id = Rating.movie_id AND RateBy.user_id = Rating .user_id AND Rating.value IS NOT NULL
+        GROUP BY Rating.movie_id
+        ),
+        DirectorRating(director_id, director_first_name, director_last_name, relative_rating, relative_rank) AS 
+        (
+        SELECT C.id, C.first_name, C.last_name, AVG(A.average_rating) as relative_rating, RANK() OVER (ORDER BY (AVG(A.average_rating)) DESC)
+        FROM Celebrity AS C, Movie as M, AverageRating as A
+        WHERE C.id = M.director_id  AND A.movie_id = M.id
+        GROUP BY C.id 
+        ORDER BY relative_rating DESC
+        )
+        SELECT year, COUNT(*) AS num
+        FROM Movie
+        WHERE director_id IN
+        (
+        SELECT director_id FROM DirectorRating WHERE relative_rank <= (SELECT COUNT(*) FROM DirectorRating)* {n}
+        )
+        GROUP BY year
+        ORDER BY year
+        """)
+        result.index = np.arange(1, len(result) + 1)
+        return result
+    
