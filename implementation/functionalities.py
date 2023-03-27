@@ -2,10 +2,14 @@ from CONSTANTS import user, password, host, port, sample_database_name, TABLES
 from mysqlCtrl import MysqlCtrl
 import pandas as pd
 import numpy as np
+<<<<<<< HEAD:movieInfoProject/util/functionalities.py
+from sqlalchemy import text
+from sqlalchemy import create_engine
+=======
 
+>>>>>>> main:implementation/functionalities.py
 
 class Functionalities:
-
     def __init__(self):
         self.ctrl = MysqlCtrl(user, password, host, port, sample_database_name)
     
@@ -22,12 +26,13 @@ class Functionalities:
         Returns: A Table of (movie_name, rating)
         """
 
-        queryStatement = f"""
+        queryStatement = text("""
             SELECT name as Title, avg_rate as Rate
             FROM Movie
             ORDER BY avg_rate DESC
-            LIMIT {n};
-        """
+            LIMIT :n;
+        """)
+        
         result = self.ctrl.query(queryStatement)
         result.index = np.arange(1, len(result) + 1)
         return result
@@ -54,7 +59,7 @@ class Functionalities:
             JOIN Celebrity C on A.id = C.id
             GROUP BY A.id
             ORDER BY avg_rating DESC
-            LIMIT {n};
+            LIMIT :n;
         """
         result = self.ctrl.query(queryStatement)
         result.index = np.arange(1, len(result) + 1)
@@ -174,4 +179,23 @@ class Functionalities:
         WHERE withNum.num <= {m};
         """)
         result.index = np.arange(1, len(result) + 1)
+        return result
+    
+    def graph_summary(self,n:int = 5) ->pd.DataFrame:
+        result = self.ctrl.query(f"""
+            SELECT year, count(MovieID) AS NumOfMovie FROM Movie GROUP BY year ORDER BY year DESC LIMIT {n}""")
+        data = []
+        year = []
+
+        for row in result:
+            data.append(int(row[1]))
+            year.append(int(row[0]))
+        
+        #axes and labels
+        plt.figure(figsize=(10,5))
+        plt.bar(year,data,width = 0.4)
+        plt.ylabel('Number of Movie')
+        plt.xlabel('Year')
+        plt.title('Number of Movie in recent 20 years')
+        plt.show()
         return result
