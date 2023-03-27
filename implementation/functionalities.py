@@ -135,8 +135,8 @@ class Functionalities:
             WHERE c2.name LIKE '%%{n}%%')
         )
 
-        SELECT m.name as Title, m.region, m.year, m.avg_rate , m.introduction , d.name as Director,
-        GROUP_CONCAT(DISTINCT CONCAT_WS(' ',a.first_name,a.last_name)) as actor_name
+        SELECT m.name as Title, m.region, m.year, m.avg_rate , d.name as Director,
+        GROUP_CONCAT(DISTINCT CONCAT_WS(' ',a.first_name,a.last_name)) as actor_name, m.introduction
         FROM Movie as m, midList,Actor natural join Celebrity as a, Acts ar, Director natural join Celebrity as d
         WHERE ar.actor_id  = a.id  and ar.movie_id  = m.id  and m.director_id  = d.id  and m.id  = midList.mids
         GROUP BY(m.name);

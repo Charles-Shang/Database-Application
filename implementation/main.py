@@ -55,7 +55,7 @@ class CLI(cmd.Cmd):
         args = self.parse_args(args, 1)
         if args:
             a = int(args[0])
-            print(self.func_ctrl.graph_summary(n = a))
+            print(self.func_ctrl.graph_summary(a))
         
     
     def do_q(self, _):
