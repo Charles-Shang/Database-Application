@@ -89,6 +89,12 @@ class CLI(cmd.Cmd):
         if args:
             region, year, category, letter, sortedBy, n = args[0], int(args[1]), args[2], args[3], args[4], int(args[5])
             print(self.func_ctrl.movie_filter_and_sort(region, year, category, letter, sortedBy, n))
+    
+    def do_g(self,args):
+        args = self.parse_args(args, 1)
+        if args:
+            a = int(args[0])
+            print(self.func_ctrl.graph_summary(n = a))
 
     def do_q(self, _):
         """Exit the program."""
