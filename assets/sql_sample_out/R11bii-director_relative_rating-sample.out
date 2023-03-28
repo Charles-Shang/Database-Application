@@ -1,0 +1,20 @@
+-- R11ii - Relative rating for all directors (listed from highest to lowest) for the first 20 entries
+director_id|first_name|last_name |relative_rating|
+-----------+----------+----------+---------------+
+          7|director7 |director7 |     8.90000000|
+          3|director3 |director3 |     8.16666667|
+          6|director6 |director6 |     8.00000000|
+         15|director15|director15|     8.00000000|
+         20|director20|director20|     7.00000000|
+          5|director5 |director5 |     6.41665000|
+          8|director8 |director8 |     6.00000000|
+         14|director14|director14|     5.00000000|
+          1|director1 |director1 |     5.00000000|
+         19|director19|director19|     4.83335000|
+          9|director9 |director9 |     3.50000000|
+         10|director10|director10|     3.00000000|
+          4|director4 |director4 |     2.00000000|
+         18|director18|director18|     2.00000000|
+         13|director13|director13|     1.33330000|
+         17|director17|director17|     1.00000000|
+          2|director2 |director2 |     1.00000000|

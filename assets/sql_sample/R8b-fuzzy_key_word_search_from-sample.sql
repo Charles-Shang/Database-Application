@@ -1,5 +1,4 @@
---R8-a fuzzy search
-
+-- R8 - fuzzy search to all movies with one of the movie names, actor names and director names that contains "5"
 WITH midList(mids) as (
 (SELECT DISTINCT Movie.id
  FROM Movie
@@ -13,8 +12,7 @@ WITH midList(mids) as (
  FROM Celebrity c2  JOIN Movie on Movie.director_id = c2.id
  WHERE c2.name LIKE '%5%')
 )
-
-SELECT m.name as title, m.region, m.year, m.avg_rate , m.category, d.name as director_name,
+SELECT m.name as title, m.region, m.year, m.avg_rate , m.category, CONCAT_WS(' ',d.first_name,d.last_name)  as director_name,
 GROUP_CONCAT(DISTINCT CONCAT_WS(' ',a.first_name,a.last_name) ) as actor_name, m.introduction
 FROM (Select * from Movie m1 inner join Movie_category mc2 on mc2.movie_id = m1.id) as m,
 	midList,Actor natural join Celebrity as a, Acts ar, Director natural join Celebrity as d

@@ -1,3 +1,4 @@
+-- R8 - fuzzy search to all movies with one of the movie names, actor names and director names that contains certain string
 WITH midList(mids) as (
 (SELECT DISTINCT Movie.id
  FROM Movie

@@ -1,0 +1,4 @@
+-- R9 - search for region='region7' and year=1810
+id|name   |region |year|allCategory|avg_rate|introduction  |
+--+-------+-------+----+-----------+--------+--------------+
+36|movie36|region7|1810|category6  |     0.0|introduction36|

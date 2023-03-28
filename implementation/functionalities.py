@@ -195,7 +195,7 @@ class Functionalities:
         plt.show()
         return result
 
-    def employee_permission_authentication(employee_id, action, tables) -> bool:
+    def employee_permission_authentication(self, employee_id, action, tables) -> bool:
         """
         check whether an employee has the permission to do certain action
         Args:
@@ -230,7 +230,7 @@ class Functionalities:
         return len(result) == total_count
 
 
-    def user_rating_insert(rating_id, rating_value, comment, movie_id, user_id) -> bool:
+    def user_rating_insert(self, rating_id, rating_value, comment, movie_id, user_id) -> bool:
         """
         insert a rating record
         Args:
@@ -257,7 +257,7 @@ class Functionalities:
         return status
         
 
-    def user_rating_delete(rating_id) -> bool:
+    def user_rating_delete(self, rating_id) -> bool:
         """
         delete a rating record
         Args:
@@ -269,7 +269,7 @@ class Functionalities:
         status = self.ctrl.execute(deleteStatement)
         return status
 
-    def user_rating_update(rating_id, new_rating_value, new_comment) -> bool:
+    def user_rating_update(self, rating_id, new_rating_value, new_comment) -> bool:
         """
         update a rating record
         Args:
