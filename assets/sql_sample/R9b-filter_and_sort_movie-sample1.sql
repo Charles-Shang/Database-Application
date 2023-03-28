@@ -1,6 +1,6 @@
 -- R9 - filter movies by region
-SELECT DISTINCT ID, name, region, year, GROUP_CONCAT( DISTINCT category ) AS allCategory, avgRate, introduction
-FROM Movie LEFT JOIN Movie_category ON Movie.ID=Movie_category.movieID
+SELECT DISTINCT id, name, region, year, GROUP_CONCAT( DISTINCT category ) AS allCategory, avg_rate, introduction
+FROM Movie LEFT JOIN Movie_category ON Movie.id=Movie_category.movie_id
 WHERE region='region7'
-GROUP BY ID
-LIMIT 10 OFFSET 0
+GROUP BY id
+LIMIT 10 OFFSET 0;

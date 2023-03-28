@@ -1,7 +1,0 @@
-actor_name|best_movie_rating|avg_rating|best_movie_name|
-----------+-----------------+----------+---------------+
-actor36   |             10.0|   9.50000|movie5         |
-actor26   |             10.0|   9.00000|movie15        |
-actor4    |              9.0|   9.00000|movie37        |
-actor34   |             10.0|   8.50000|movie7         |
-actor6    |             10.0|   8.35000|movie29        |

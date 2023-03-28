@@ -1,0 +1,8 @@
+-- R6ii - Top 5 movie actors by average user rating on their movies and one best movie
+actor_name     |avg_rating|best_movie_name|best_movie_rating|
+---------------+----------+---------------+-----------------+
+actor26 actor26|   9.00000|movie15        |             10.0|
+actor4 actor4  |   9.00000|movie37        |              9.0|
+actor34 actor34|   8.50000|movie7         |             10.0|
+actor6 actor6  |   8.35000|movie29        |             10.0|
+actor36 actor36|   8.15000|movie5         |             10.0|

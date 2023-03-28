@@ -1,0 +1,9 @@
+-- R9 - filter movie by category='category10' and sort by rating
+id|name   |region  |year|allCategory                   |avg_rate|introduction  |
+--+-------+--------+----+------------------------------+--------+--------------+
+20|movie20|region7 |1837|category10,category6,category9|     9.0|introduction20|
+40|movie40|region37|1815|category10,category4,category7|     7.0|introduction40|
+ 1|movie1 |region26|1879|category10                    |     5.0|introduction1 |
+23|movie23|region25|1865|category10,category2,category5|     3.0|introduction23|
+22|movie22|region24|2000|category10                    |     0.0|introduction22|
+39|movie39|region13|1812|category10,category4          |     0.0|introduction39|
