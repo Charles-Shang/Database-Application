@@ -1,11 +1,11 @@
 # database
-user = 'root'
-password = 'cs348group11'
-host = 'cs348project.ceggb9lnr3wd.us-west-1.rds.amazonaws.com'
-port = '3306'
-sample_database_name = 'productiondb'
+user = "root"
+password = "cs348group11"
+host = "cs348project.ceggb9lnr3wd.us-west-1.rds.amazonaws.com"
+port = "3306"
+sample_database_name = "productiondb"
 TABLES = [
-    "Actor",
+    "Access" "Actor",
     "Acts",
     "Celebrity",
     "Director",
@@ -18,7 +18,7 @@ TABLES = [
     "Person",
     "RateBy",
     "Rating",
-    "User",
+    "Unique_id" "User",
 ]
 
 # project
@@ -42,3 +42,78 @@ app_title = """
                                                                                                          
 """
 app_name = "MOVIEWER"
+
+import textFormatter as tf
+
+menus = [
+    ["Search a key word", ["search", "<movie/celebrity>"]],
+    ["Top movies", ["tm", "<n>"]],
+    ["Top actors", ["ta", "<n>"]],
+    ["Top categories with movies", ["tc", "<n>", "<m>"]],
+    ["Functional Filtering", ["fsp"]],
+    [
+        f"List {tf.pink('fsp')} sub-options",
+        ["list", "<region|year|category|letter|sortedBy|n>"],
+    ],
+    ["Home page", ["home"]],
+    [
+        "Navigate a certain entry",
+        ["navigate", "<movie|celebrity|director|actor|rating>", "<id>"],
+    ],
+    ["User account login", ["login"]],
+    ["User account logout", ["logout"]],
+    ["User account register", ["register"]],
+    ["My Profile", ["me"]],
+    ["Command example", ["help", "<option>"]],
+    ["Quit", ["q"]],
+]
+
+from copy import deepcopy
+
+menus_plus = deepcopy(menus)
+menus_plus.insert(12, ["Rate a movie", ["rate", "<movie_id>"]])
+menus_plus.insert(13, ["Modify a Rating", ["modify", "<update|delete>", "<rating_id>"]])
+
+# User
+from string import ascii_letters, digits
+
+pwd_valid_chars = ascii_letters + digits + "_"
+
+# info template
+celebrity_template = """
+\x1b[1;33;40mID:\x1b[0m %s\t\x1b[1;33;40mName:\x1b[0m %s
+\x1b[1;33;40mNationality:\x1b[0m %s\t\x1b[1;33;40mBirth:\x1b[0m %s
+\x1b[1;33;40mSummary:\x1b[0m
+%s
+"""
+
+director_template = """
+\x1b[1;33;40mID:\x1b[0m %s\t\x1b[1;33;40mName:\x1b[0m %s
+\x1b[1;33;40mNationality:\x1b[0m %s\t\x1b[1;33;40mBirth:\x1b[0m %s\t\x1b[1;33;40mGraduation:\x1b[0m %s
+\x1b[1;33;40mDirected Movie(s):\x1b[0m %s
+\x1b[1;33;40mFamous Movie(s):\x1b[0m %s
+\x1b[1;33;40mSummary:\x1b[0m
+%s
+"""
+
+actor_template = """
+\x1b[1;33;40mID:\x1b[0m %s\t\x1b[1;33;40mName:\x1b[0m %s
+\x1b[1;33;40mNationality:\x1b[0m %s\t\x1b[1;33;40mBirth:\x1b[0m %s\t\x1b[1;33;40mOrganization:\x1b[0m %s
+\x1b[1;33;40mActed Movie(s):\x1b[0m %s
+\x1b[1;33;40mSummary:\x1b[0m
+%s
+"""
+
+movie_template = """
+\x1b[1;33;40mID:\x1b[0m %s\t\x1b[1;33;40mName:\x1b[0m %s\t\x1b[1;33;40mYear:\x1b[0m %s\t\x1b[1;33;40mRating:\x1b[0m %s
+\x1b[1;33;40mRegion:\x1b[0m %s\t\x1b[1;33;40mCategory:\x1b[0m %s
+\x1b[1;33;40mDirector:\x1b[0m %s\t\x1b[1;33;40mActor:\x1b[0m %s
+\x1b[1;33;40mIntroduction:\x1b[0m
+%s
+"""
+
+rating_template = """
+\x1b[1;33;40mID:\x1b[0m %s\t\x1b[1;33;40mValue:\x1b[0m %s\t\x1b[1;33;40mMovie:\x1b[0m %s\t\x1b[1;33;40mTime:\x1b[0m %s
+\x1b[1;33;40mComment:\x1b[0m
+%s
+"""

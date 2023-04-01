@@ -4,10 +4,135 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class Functionalities:
     def __init__(self):
         self.ctrl = MysqlCtrl(user, password, host, port, sample_database_name)
-    
+
+    def get_movie(self, id: int):
+        """
+        get_movie finds all information about a movie.
+
+        Args:
+            id: Movie id.
+
+        Returns: A Table of (movie_id, movie_name, region, year, introduction, rating, category, director, actor)
+        """
+
+        return self.ctrl.query(
+            f"""
+        SELECT id, name, region, `year`, introduction, avg_rate,
+        (SELECT GROUP_CONCAT(category)  FROM Movie_category WHERE movie_id = M.id) AS catgeory,
+        (SELECT CONCAT(first_name, " ", last_name, " (", director_id, ")")  FROM Celebrity WHERE id = director_id) AS director,
+        (SELECT GROUP_CONCAT(CONCAT(first_name, " ", last_name, " (", actor_id, ")"))  FROM Acts JOIN Celebrity ON id = actor_id WHERE movie_id = M.id) AS actor
+        FROM Movie AS M
+        WHERE id = {id};
+        """
+        )
+
+    def get_rating(self, id: int, user_id: int, user_type: str = "NOT Employee"):
+        """
+        get_rating finds all information about a rating.
+
+        Args:
+            id: Rating id.
+
+        Returns: A Table of (id, value, comment, time, movie)
+        """
+
+        if user_type == "Employee":
+            return self.ctrl.query(
+                f"""
+            SELECT R.id, value, comment, time,
+            (SELECT GROUP_CONCAT(M.name, " (", M.id, ")") FROM Movie AS M WHERE M.id = movie_id) AS movie
+            FROM Rating AS R
+            WHERE R.id = {id};
+            """
+            )
+        else:
+            return self.ctrl.query(
+                f"""
+            SELECT R.id, value, comment, time,
+            (SELECT GROUP_CONCAT(M.name, " (", M.id, ")") FROM Movie AS M WHERE M.id = movie_id) AS movie
+            FROM Rating AS R
+            WHERE R.id = {id} AND R.user_id = {user_id};
+            """
+            )
+
+    def get_celebrity(self, id: int):
+        """
+        get_celebrity finds all information about a celebrity.
+
+        Args:
+            id: Celebrity id.
+
+        Returns: A Table of one of director_info, actor_info or celebrity_info
+        """
+
+        director_count = int(
+            self.ctrl.query(f"SELECT count(*) FROM Director WHERE id = {id};").iloc[0][
+                0
+            ]
+        )
+        actor_count = int(
+            self.ctrl.query(f"SELECT count(*) FROM Actor WHERE id = {id};").iloc[0][0]
+        )
+        if director_count:
+            return self.get_director(id)
+        elif actor_count:
+            return self.get_actor(id)
+        else:
+            return self.ctrl.query(
+                f"""
+            SELECT id, CONCAT(first_name, " ", last_name) AS name, nationality, birth, summary
+            FROM Celebrity
+            WHERE id = {id};
+            """
+            )
+
+    def get_director(self, id: int):
+        """
+        get_director finds all information about a director.
+
+        Args:
+            id: Director id.
+
+        Returns: A Table of (id, name, nationality, birth, summary, graduation, movie(s), famous_movie)
+        """
+
+        return self.ctrl.query(
+            f"""
+        SELECT C.id, CONCAT(first_name, " ", last_name) AS name, nationality, birth, summary, graduation,
+        (SELECT GROUP_CONCAT(CONCAT(Movie.name, " (", Movie.id, ")"))  FROM Movie WHERE director_id = C.id) AS movie,
+        (SELECT GROUP_CONCAT(CONCAT(Movie.name, " (", DFM.movie_id, ")"))  FROM Director_famousMovie AS DFM JOIN Movie ON Movie.id = DFM.movie_id WHERE DFM.director_id = C.id) AS famous_movie
+        FROM Celebrity AS C
+        JOIN Director
+        ON C.id = Director.id
+        WHERE C.id = {id};
+        """
+        )
+
+    def get_actor(self, id: int):
+        """
+        get_actor finds all information about an actor.
+
+        Args:
+            id: Actor id.
+
+        Returns: A Table of (id, name, nationality, birth, summary, organization, movie(s))
+        """
+
+        return self.ctrl.query(
+            f"""
+        SELECT C.id, CONCAT(first_name, " ", last_name) AS name, nationality, birth, summary, organization,
+        (SELECT GROUP_CONCAT(CONCAT(Movie.name, " (", Movie.id, ")"))  FROM Acts JOIN Movie ON Movie.id = movie_id WHERE actor_id = C.id) AS movie
+        FROM Celebrity AS C
+        JOIN Actor
+        ON C.id = Actor.id
+        WHERE C.id = {id};
+        """
+        )
+
     def count_entries(self, table_name: str) -> int:
         return int(self.ctrl.query(f"SELECT count(*) FROM {table_name};").iloc[0][0])
 
@@ -17,25 +142,26 @@ class Functionalities:
 
         Args:
             n: The number of movies selected, by default n=5
-        
+
         Returns: A Table of (movie_name, rating)
         """
 
         queryStatement = f"""
-            SELECT name as Title, avg_rate as Rate
+            SELECT name as Title, avg_rate as Rating
             FROM Movie
             ORDER BY avg_rate DESC
             LIMIT {n};
         """
-        
+
         result = self.ctrl.query(queryStatement)
         result.index = np.arange(1, len(result) + 1)
+        result.set_axis(["Title", "Rating"], axis=1, inplace=True)
         return result
 
     def top_actors_with_best_movie(self, n: int) -> pd.DataFrame:
         """
         top_actors_with_best_movie finds the top n actors and their one best
-        movie. 
+        movie.
 
         Args:
             n: The number of actors selected. By default, n=5
@@ -44,23 +170,28 @@ class Functionalities:
         """
 
         queryStatement = f"""
-            SELECT C.name as actor_name,
-                AVG(M.avg_rate) as avg_rating,
-                M.name as best_movie_name,
-                MAX(M.avg_rate) as best_movie_rating
-            FROM Actor A
-            JOIN Acts AC ON A.id = AC.actor_id
-            JOIN Movie M ON M.id = AC.movie_id
-            JOIN Celebrity C on A.id = C.id
-            GROUP BY A.id
-            ORDER BY avg_rating DESC
-            LIMIT {n};
+        SELECT CONCAT_WS(' ',C.first_name,C.last_name) as actor_name,
+            AVG(M.avg_rate) as avg_rating,
+            M.name as best_movie_name,
+            MAX(M.avg_rate) as best_movie_rating
+        FROM Actor A
+        JOIN Acts AC ON A.id = AC.actor_id
+        JOIN Movie M ON M.id = AC.movie_id
+        JOIN Celebrity C on A.id = C.id
+        GROUP BY A.id
+        ORDER BY avg_rating DESC
+        LIMIT {n};
         """
         result = self.ctrl.query(queryStatement)
+        result.set_axis(
+            ["Actor", "Actor Rating", "Movie", "Movie Rating"], axis=1, inplace=True
+        )
         result.index = np.arange(1, len(result) + 1)
         return result
 
-    def movie_filter_and_sort (self, region, year, category, letter, sortedBy, limit : int = 10, offset : int = 0) -> pd.DataFrame:
+    def movie_filter_and_sort(
+        self, region, year, category, letter, sortedBy, limit: int = 10, offset: int = 0
+    ) -> pd.DataFrame:
         """
         movie_filter_and_sort filters movies by region, year, category, letter
         then sort movies by sortedBy, where sortedBy is in {updateTime, popularity, rating}.
@@ -78,44 +209,70 @@ class Functionalities:
         FROM Movie LEFT JOIN Movie_category ON Movie.ID=Movie_category.movie_id"""
 
         hasWhere = False
-        if (region != "" and region != "ALL") or year != 0 or (letter != "" and letter != "ALL"):
+        if (
+            (region != "" and region != "ALL")
+            or (year != 0 and year != "ALL")
+            or (letter != "" and letter != "ALL")
+        ):
             queryStatement += " WHERE"
             hasWhere = True
         if region != "" and region != "ALL":
             queryStatement += " region='" + region + "' AND"
-        if year != 0:
+        if year != 0 and year != "ALL":
             queryStatement += " year=" + str(year) + " AND"
         if letter != "" and letter != "ALL":
             queryStatement += " name REGEXP '^" + letter + "' AND"
-        
+
         if hasWhere:
             # remove last AND
             queryStatement = queryStatement[:-4]
         queryStatement += " GROUP BY ID"
         if category != "" and category != "ALL":
-            queryStatement += " HAVING SUM(case when category='" + category + "' then 1 else 0 end) > 0"
+            queryStatement += (
+                " HAVING SUM(case when category='"
+                + category
+                + "' then 1 else 0 end) > 0"
+            )
 
         if sortedBy == "rating":
             queryStatement += " ORDER BY avg_rate DESC"
-        
+
         queryStatement += " LIMIT " + str(limit) + " OFFSET " + str(offset) + ";"
         result = self.ctrl.query(queryStatement)
+        result.index = np.arange(1, len(result) + 1)
+        result.set_axis(
+            ["ID", "Movie", "Region", "Year", "Category", "Rating", "Introduction"],
+            axis=1,
+            inplace=True,
+        )
         return result
 
-    
-    def fuzz_search (self, n:str) -> pd.DataFrame:
+    def get_unique(self, option: str) -> pd.DataFrame:
+        if option == "region":
+            result = self.ctrl.query("SELECT DISTINCT(region) FROM Movie;")
+            result.index = np.arange(1, len(result) + 1)
+            result.set_axis(["Region"], axis=1, inplace=True)
+            return result
+        elif option == "category":
+            result = self.ctrl.query("SELECT DISTINCT(category) FROM Movie_category;")
+            result.index = np.arange(1, len(result) + 1)
+            result.set_axis(["Category"], axis=1, inplace=True)
+            return result
+
+    def fuzz_search(self, n: str) -> pd.DataFrame:
         """
         fuzz_search finds the movie which contains the keyword in any of
         author name, director name or movie name.
 
         Args:
             n: The key word being searched and displayed
-        
+
         Returns: A Table of (movie_name, region, year, category, rating,
                              summary, director_name, [actor_name])
         """
 
-        result = self.ctrl.query(f"""
+        result = self.ctrl.query(
+            f"""
         WITH midList(mids) as (
             (SELECT DISTINCT Movie.id
             FROM Movie
@@ -129,18 +286,33 @@ class Functionalities:
             FROM Celebrity c2  JOIN Movie on Movie.director_id = c2.id
             WHERE c2.name LIKE '%%{n}%%')
         )
-
         SELECT m.name as Title, m.region, m.year, m.avg_rate , d.name as Director,
         GROUP_CONCAT(DISTINCT CONCAT_WS(' ',a.first_name,a.last_name)) as actor_name, m.introduction
         FROM Movie as m, midList,Actor natural join Celebrity as a, Acts ar, Director natural join Celebrity as d
         WHERE ar.actor_id  = a.id  and ar.movie_id  = m.id  and m.director_id  = d.id  and m.id  = midList.mids
         GROUP BY(m.name);
 
-        """)
+        """
+        )
         result.index = np.arange(1, len(result) + 1)
+        result.set_axis(
+            [
+                "Movie",
+                "Region",
+                "Year",
+                "Rating",
+                "Director",
+                "Actor(s)",
+                "Introduction",
+            ],
+            axis=1,
+            inplace=True,
+        )
         return result
 
-    def find_top_m_movies_for_n_categories(self, n: int = 5, m: int = 3) -> pd.DataFrame:
+    def find_top_m_movies_for_n_categories(
+        self, n: int = 5, m: int = 3
+    ) -> pd.DataFrame:
         """
         find_top_m_movies_for_n_categories finds the top n movie category of
         the average ratings and m top movies in each category.
@@ -148,11 +320,12 @@ class Functionalities:
         Args:
             n: The number of movie categories that is returned
             m: The number of movies for each of the n categories
-        
+
         Returns: A Table of (category, averageRating, name, rates)
         """
 
-        result = self.ctrl.query(f"""
+        result = self.ctrl.query(
+            f"""
         WITH MOVIE(name, category, rates) as
             (SELECT Movie.name, Movie_category.category, Movie.avg_rate
             FROM Movie, Movie_category
@@ -172,26 +345,34 @@ class Functionalities:
             ORDER BY averageRating DESC, rates DESC
         ) AS withNum
         WHERE withNum.num <= {m};
-        """)
+        """
+        )
         result.index = np.arange(1, len(result) + 1)
+        result.set_axis(
+            ["Category", "Category Rating", "Movie", "Movie Rating"],
+            axis=1,
+            inplace=True,
+        )
         return result
-    
-    def graph_summary(self,n:int = 5) ->pd.DataFrame:
-        result = self.ctrl.query(f"""
-            SELECT year, count(MovieID) AS NumOfMovie FROM Movie GROUP BY year ORDER BY year DESC LIMIT {n}""")
+
+    def graph_summary(self, n: int = 5) -> pd.DataFrame:
+        result = self.ctrl.query(
+            f"""
+            SELECT year, count(MovieID) AS NumOfMovie FROM Movie GROUP BY year ORDER BY year DESC LIMIT {n}"""
+        )
         data = []
         year = []
 
         for row in result:
             data.append(int(row[1]))
             year.append(int(row[0]))
-        
-        #axes and labels
-        plt.figure(figsize=(10,5))
-        plt.bar(year,data,width = 0.4)
-        plt.ylabel('Number of Movie')
-        plt.xlabel('Year')
-        plt.title('Number of Movie in recent 20 years')
+
+        # axes and labels
+        plt.figure(figsize=(10, 5))
+        plt.bar(year, data, width=0.4)
+        plt.ylabel("Number of Movie")
+        plt.xlabel("Year")
+        plt.title("Number of Movie in recent 20 years")
         plt.show()
         return result
 
@@ -204,33 +385,36 @@ class Functionalities:
                     as this function doesn't check correctness, case does not matter (can be capital or lower case)
             tables: list of strings, the table/view names, len(list) >= 1
         """
-        total_count = len(tables) # count the total number of tables that need permission, should match the # of records returned
+        total_count = len(
+            tables
+        )  # count the total number of tables that need permission, should match the # of records returned
         if total_count == 0:
             return False
 
         queryStatement = """SELECT Permits.employee_id, Permission.name
         FROM Permission LEFT JOIN Permits ON Permits.permission_id=Permission.id
         WHERE Permits.employee_id="""
-        queryStatement += str(employee_id) + "AND (Permission.name IN ("
+        queryStatement += str(employee_id) + " AND Permission.name IN ("
         permissionNames = ""
         action = action.upper()
 
         if action == "SELECT":
-            permissionNames = "view_" + tables[0].lower() + "_db"
+            permissionNames = "'view_" + tables[0].lower() + "_db'"
             for i in range(1, len(tables)):
-                permissionNames += ", view_" + tables[i].lower() + "_db"
+                permissionNames += ", 'view_" + tables[i].lower() + "_db'"
             permissionNames += ");"
         else:
-            permissionNames = "update_" + tables[0].lower() + "_db"
+            permissionNames = "'update_" + tables[0].lower() + "_db'"
             for i in range(1, len(tables)):
-                permissionNames += ", update_" + tables[i].lower() + "_db"
+                permissionNames += ", 'update_" + tables[i].lower() + "_db'"
             permissionNames += ");"
 
-        result = self.ctrl.query(queryStatement)
+        result = self.ctrl.query(queryStatement + permissionNames)
         return len(result) == total_count
 
-
-    def user_rating_insert(self, rating_id, rating_value, comment, movie_id, user_id) -> bool:
+    def user_rating_insert(
+        self, rating_id, rating_value, comment, movie_id, user_id
+    ) -> bool:
         """
         insert a rating record
         Args:
@@ -252,10 +436,15 @@ class Functionalities:
         VALUES ({id}, NOW(), {value}, '{comment}', {movie_id}, {user_id});
         COMMIT;"""
 
-        insertStatement = insertStatement.format(movie_id=movie_id, user_id=user_id, id=rating_id, value=rating_value, comment=comment)
+        insertStatement = insertStatement.format(
+            movie_id=movie_id,
+            user_id=user_id,
+            id=rating_id,
+            value=rating_value,
+            comment=comment,
+        )
         status = self.ctrl.execute(insertStatement)
         return status
-        
 
     def user_rating_delete(self, rating_id) -> bool:
         """
@@ -280,6 +469,10 @@ class Functionalities:
             true if update is successful, false otherwise
         """
         updateStatement = "UPDATE Rating SET value = {new_rating_value}, comment = '{new_comment}' WHERE id = {rating_id};"
-        updateStatement = updateStatement.format(new_rating_value=new_rating_value, new_comment=new_comment, rating_id=rating_id)
+        updateStatement = updateStatement.format(
+            new_rating_value=new_rating_value,
+            new_comment=new_comment,
+            rating_id=rating_id,
+        )
         status = self.ctrl.execute(updateStatement)
         return status
