@@ -7,13 +7,16 @@ from CONSTANTS import (
     movie_template,
     rating_template,
     menus,
-    menus_plus,
+    menus_user,
+    menus_employee,
 )
 from functionalities import Functionalities
 import cmd
 import textFormatter as tf
 from User import User
 import util
+from accessCtrl import Access
+from graphCtrl import Graph
 
 
 def login_required(cur_user: User):
@@ -58,6 +61,7 @@ def Premium_required(cur_user: User):
 
     return inner
 
+
 def Employee_required(cur_user: User):
     def inner(func):
         def wrapper(*args):
@@ -72,6 +76,22 @@ def Employee_required(cur_user: User):
 
     return inner
 
+
+def User_required(cur_user: User):
+    def inner(func):
+        def wrapper(*args):
+            if cur_user.user_type not in ["Employee"]:
+                return func(*args)
+            else:
+                print(
+                    f"""[{tf.pink("!!!")}]: Employee is not permitted to use this function."""
+                )
+
+        return wrapper
+
+    return inner
+
+
 class CLI(cmd.Cmd):
 
     base_location = "Home"
@@ -83,6 +103,8 @@ class CLI(cmd.Cmd):
     prompt = tf.underline(location[-1], "pink") + tf.yellow("> ")
     func_ctrl = Functionalities()
     cur_user = User()
+    acc_ctrl = Access()
+    graph_ctrl = Graph()
 
     def postcmd(self, stop: bool, line: str) -> bool:
         if len(self.location) == 1:
@@ -100,9 +122,14 @@ class CLI(cmd.Cmd):
         print(
             f"[{tf.green('?')}] What can I do for you? ({tf.underline('Type')} one of the following options)"
         )
-        for index, (option_description, syntax) in enumerate(
-            menus_plus if self.cur_user.is_logged_in() else menus
-        ):
+
+        chosen_menu = menus
+        if self.cur_user.user_type == "Employee":
+            chosen_menu = menus_employee
+        elif self.cur_user.user_type != "Visitor":
+            chosen_menu = menus_user
+
+        for index, (option_description, syntax) in enumerate(chosen_menu):
             print(
                 f"  {(' ' + str(index+1)) if index < 9 else index+1}. {option_description}: {tf.pink(syntax[0])}",
                 end="",
@@ -181,6 +208,8 @@ class CLI(cmd.Cmd):
         region = input("Enter a region (default: ALL): ").strip()
         if region == "":
             region = "ALL"
+        else:
+            region = " ".join(region.split("_"))
         while True:
             year = input("Enter a year (default: ALL): ").strip()
             if year == "":
@@ -195,9 +224,19 @@ class CLI(cmd.Cmd):
                     continue
         category = input("Enter a category (default: ALL): ").strip()
         letter = input("Enter a letter (default: ALL): ").strip()[:1]
-        sortedBy = input(
-            "Enter a sorting options (default: rating ascending): "
-        ).strip()
+        while True:
+            sortedBy = input(
+                "Enter a sorting options (default: rating ascending): "
+            ).strip()
+            if sortedBy == "":
+                sortedBy = "ascending"
+            try:
+                if sortedBy not in ["ascending", "descending"]:
+                    1 / 0
+                break
+            except:
+                print(f"""{tf.red("Warning")}: Invalid Input SortedBy.""")
+
         while True:
             n = input("Enter a number of rows displayed (default: 10): ").strip()
             if n == "":
@@ -209,13 +248,14 @@ class CLI(cmd.Cmd):
                     break
                 except:
                     print(f"""{tf.red("Warning")}: Invalid Input n.""")
-                    continue
 
-        print(
-            self.func_ctrl.movie_filter_and_sort(
-                region, year, category, letter, sortedBy, n
-            )
+        result = self.func_ctrl.movie_filter_and_sort(
+            region, year, category, letter, sortedBy, n
         )
+        if len(result) == 0:
+            print("No results have been found!")
+        else:
+            print(result)
 
     def do_list(self, args):
         """Display the suboptions for fsp query"""
@@ -230,41 +270,130 @@ class CLI(cmd.Cmd):
                 print("Movies with starting letters from A to Z and a to z.")
             elif option == "sortedby":
                 print(
-                    f"Movies are sorted by rating in ascending order by default, type {tf.yellow('rating')} to indicate in descending order."
+                    f"Movies are sorted by rating in {tf.yellow('ascending')} order by default, type {tf.yellow('descending')} to indicate in descending order."
                 )
             elif option == "n":
                 print("Display n rows of query result. n is a non-negative number.")
             else:
                 print(f"""{tf.red("Warning")}: Invalid listing options.""")
 
-    def do_g(self, args):
+    def do_graph(self, args):
         while True:
             try:
-                option = int(input("Enter which graph you would like to see: "))
-                if 1 <= option <= 3:
+                print("Enter which graph you would like to see:")
+                graphs = [
+                    "Number of movies per year (most recent 20 years)",
+                    "Relative rating for all directors",
+                    "Number of movies directed by directors with top 10% relative rating per year (most recent 20 years)",
+                ]
+                for index, graph in enumerate(graphs):
+                    print(f"{index+1}. {graph}")
+                option = int(input())
+                if 1 <= option <= len(graphs):
                     break
                 else:
-                    1/0
+                    1 / 0
             except:
                 print(f"""{tf.red("Warning")}: Invalid Input.""")
 
-        while True:
-            try:
-                graph = int(input("Enter which type of graph you would like to see: "))
-                if 1 <= graph <= 3:
-                    break
-                else:
-                    1/0
-            except:
-                print(f"""{tf.red("Warning")}: Invalid Input.""")
-
+        if option in [1, 3]:
+            while True:
+                try:
+                    print("Enter which type of graph you would like to see:")
+                    graph_types = ["Histogram", "Line", "Pie"]
+                    for index, graph_type in enumerate(graph_types):
+                        print(f"{index+1}. {graph_type}")
+                    graph = int(input())
+                    if 1 <= graph <= len(graph_types):
+                        break
+                    else:
+                        1 / 0
+                except:
+                    print(f"""{tf.red("Warning")}: Invalid Input.""")
 
         if option == 1:
-            pass
+            while True:
+                try:
+                    n = int(input("Enter the number of displayed years: "))
+                    break
+                except:
+                    print(f"""{tf.red("Warning")}: Invalid Input.""")
+            data = self.func_ctrl.num_movies_per_year(n)
+            if graph == 1:
+                self.graph_ctrl.draw_hist(
+                    data["year"].apply(str).to_list(),
+                    data["numOfMovies"].to_list(),
+                    "Year",
+                    "Number of Movies",
+                    f"Number of Movies per year (most recent {n} years)",
+                )
+            elif graph == 2:
+                self.graph_ctrl.draw_line(
+                    data["year"].apply(str).to_list(),
+                    data["numOfMovies"].to_list(),
+                    "Year",
+                    "Number of Movies",
+                    f"Number of Movies per year (most recent {n} years)",
+                )
+            elif graph == 3:
+                self.graph_ctrl.draw_pie(
+                    data["numOfMovies"].to_list(),
+                    data["year"].apply(str).to_list(),
+                    f"Number of Movies per year (most recent {n} years)",
+                )
+            else:
+                1 / 0
         elif option == 2:
-            pass
+            while True:
+                try:
+                    n = int(input("Enter the number of displayed directors: "))
+                    break
+                except:
+                    print(f"""{tf.red("Warning")}: Invalid Input.""")
+            data = self.func_ctrl.director_relative_rating(n)
+            data["label"] = data.apply(
+                lambda row: f"{row['name']} ({row['id']})", axis=1
+            )
+            data["rate"] = data["rate"].apply(lambda x: round(float(x), 2))
+            self.graph_ctrl.draw_hist(
+                data["label"].to_list(),
+                data["rate"].to_list(),
+                "Diretcors",
+                "Relative Rating",
+                f"Relative rating for top {n} directors",
+            )
         elif option == 3:
-            pass
+            while True:
+                try:
+                    n = int(input("Enter the number of displayed years: "))
+                    break
+                except:
+                    print(f"""{tf.red("Warning")}: Invalid Input.""")
+            data = self.func_ctrl.number_of_movies_by_good_directors_per_year(n)
+            if graph == 1:
+                self.graph_ctrl.draw_hist(
+                    data["year"].apply(str).to_list(),
+                    data["num"].to_list(),
+                    "Year",
+                    "Number of Top 10% Directors",
+                    f"Number of Top 10% Directors per year (most recent {n} years)",
+                )
+            elif graph == 2:
+                self.graph_ctrl.draw_line(
+                    data["year"].apply(str).to_list(),
+                    data["num"].to_list(),
+                    "Year",
+                    "Number of Top 10% Directors",
+                    f"Number of Top 10% Directors per year (most recent {n} years)",
+                )
+            elif graph == 3:
+                self.graph_ctrl.draw_pie(
+                    data["num"].to_list(),
+                    data["year"].apply(str).to_list(),
+                    f"Number of Top 10% Directors per year (most recent {n} years)",
+                )
+            else:
+                1 / 0
 
     def do_q(self, _):
         """Exit the program."""
@@ -273,12 +402,14 @@ class CLI(cmd.Cmd):
 
     @Employee_required(cur_user)
     def register_employee_helper(self):
-        if self.func_ctrl.employee_permission_authentication(self.cur_user.user_id, "insert", ["employee"]):
+        if self.func_ctrl.employee_permission_authentication(
+            self.cur_user.user_id, "insert", ["employee"]
+        ):
             self.cur_user.register_employee()
         else:
             print(
-                    f"""[{tf.red("Warning")}]: Employee is not permitted to use this function."""
-                )
+                f"""[{tf.red("Warning")}]: Employee is not permitted to use this function."""
+            )
 
     def do_register(self, args):
         """Register a user account."""
@@ -335,7 +466,7 @@ class CLI(cmd.Cmd):
             Login Time: {self.cur_user.last_log_in_time}
             """
             )
-            
+
     def display_movie(self, id: int):
         result = self.func_ctrl.get_movie(id)
         if result.empty:
@@ -375,7 +506,9 @@ class CLI(cmd.Cmd):
 
     @login_required(cur_user)
     def display_rating(self, id: int, user_id: int):
-        if self.func_ctrl.employee_permission_authentication(self.cur_user.user_id, "select", ["user"]):
+        if self.func_ctrl.employee_permission_authentication(
+            self.cur_user.user_id, "select", ["user"]
+        ):
             result = self.func_ctrl.get_rating(id, user_id, "Employee")
         else:
             result = self.func_ctrl.get_rating(id, user_id)
@@ -393,7 +526,7 @@ class CLI(cmd.Cmd):
             return True
 
     def do_navigate(self, args):
-        """Navigate a certain Movie/Celebrity/Director/Actor/Rating page."""
+        """Navigate a certain Movie/Celebrity/Director/Actor/Rating page by id."""
         args = self.parse_args(args, 2)
         if args:
             # try:
@@ -460,16 +593,15 @@ class CLI(cmd.Cmd):
                             )
                         )
                     else:
-                        1 / 0
+                        print(f"""{tf.red("Warning")}: Invalid Input.""")
             elif option == "movie":
                 self.display_movie(id)
             elif option == "rating":
                 self.display_rating(id, self.cur_user.user_id)
             else:
-                1 / 0
-        # except:
-        #     print(f"""{tf.red("Warning")}: Invalid Input.""")
+                print(f"""{tf.red("Warning")}: Invalid Input.""")
 
+    @User_required(cur_user)
     @login_required(cur_user)
     def do_rate(self, args):
         """Rate a movie by movie_id."""
@@ -501,49 +633,141 @@ class CLI(cmd.Cmd):
             except:
                 print(f"""{tf.red("Warning")}: Invalid Input.""")
 
+    def try_accquire_lock(self, result):
+        if not result:
+            print(
+                f"""{tf.red("Lock Accquired Failed")}: there are other user currently on this table."""
+            )
+            return False
+        return True
+
+    def try_release_lock(self, result):
+        if not result:
+            print(f"""{tf.red("Lock Released Failed")}: You don't have the lock.""")
+
     @Standard_required(cur_user)
     def update_rating(self, id: int):
-        while True:
-            value = input("Enter your rating (1-10): ")
-            try:
-                value = int(value)
-                if 1 <= value <= 10:
-                    break
-            except:
-                print(f"""{tf.red("Warning")}: Invalid Rating.""")
-                continue
-        comment = input("Enter your comment: ")
-        if self.func_ctrl.user_rating_update(id, value, comment):
-            print(f"""{tf.green("Update Success!")}""")
-        else:
-            print(f"""{tf.red("ERROR")}: Update rating failed.""")
+        if self.try_accquire_lock(
+            self.acc_ctrl.try_lock_X(self.cur_user.user_id, "Rating")
+        ):
+            while True:
+                value = input("Enter your rating (1-10): ")
+                try:
+                    value = int(value)
+                    if 1 <= value <= 10:
+                        break
+                except:
+                    print(f"""{tf.red("Warning")}: Invalid Rating.""")
+                    continue
+            comment = input("Enter your comment: ")
+            if self.func_ctrl.user_rating_update(id, value, comment, util.now()):
+                print(f"""{tf.green("Update Success!")}""")
+            else:
+                print(f"""{tf.red("ERROR")}: Update rating failed.""")
+            self.try_release_lock(
+                self.acc_ctrl.try_unlock_X(self.cur_user.user_id, "Rating")
+            )
 
     @Premium_required(cur_user)
     def delete_rating(self, id: int):
-        if self.func_ctrl.user_rating_delete(id):
-            print(f"""{tf.green("Delete Success!")}""")
+        if input("Are you sure to delete? (Y/n)").lower() in [
+            "yes",
+            "y",
+        ]:
+            if self.try_accquire_lock(
+                self.acc_ctrl.try_lock_X(self.cur_user.user_id, "Rating")
+            ):
+                if self.func_ctrl.user_rating_delete(id):
+                    print(f"""{tf.green("Delete Success!")}""")
+                else:
+                    print(f"""{tf.red("ERROR")}: Delete rating failed.""")
+                self.try_release_lock(
+                    self.acc_ctrl.try_unlock_X(self.cur_user.user_id, "Rating")
+                )
         else:
-            print(f"""{tf.red("ERROR")}: Delete rating failed.""")
+            print("Delete operation cancelled.")
+
+    @Employee_required(cur_user)
+    def update_movie(self, id: int):
+        if self.try_accquire_lock(
+            self.acc_ctrl.try_lock_X(self.cur_user.user_id, "Movie")
+        ):
+            region = input("Enter the region: ")
+            while True:
+                year = input("Enter the year: ")
+                try:
+                    year = int(year)
+                    if 1 <= year <= 10:
+                        break
+                except:
+                    print(f"""{tf.red("Warning")}: Invalid Year.""")
+                    continue
+            introduction = input("Enter the introduction: ")
+            if self.func_ctrl.movie_update(id, region, year, introduction):
+                print(f"""{tf.green("Update Success!")}""")
+            else:
+                print(f"""{tf.red("ERROR")}: Update Movie failed.""")
+            self.try_release_lock(
+                self.acc_ctrl.try_unlock_X(self.cur_user.user_id, "Movie")
+            )
+
+    @Employee_required(cur_user)
+    def delete_movie(self, id: int):
+        if self.try_accquire_lock(
+            self.acc_ctrl.try_lock_X(self.cur_user.user_id, "Movie")
+        ):
+            print(
+                f"{tf.yellow(str(self.func_ctrl.user_rating_count_movie_id(id)))} ratings will be deleted."
+            )
+            print(
+                f"{tf.yellow(str(self.func_ctrl.category_count_movie_id(id)))} categories will be deleted."
+            )
+            print(
+                f"{tf.yellow(str(self.func_ctrl.acts_count_movie_id(id)))} acts relations will be deleted."
+            )
+            if input("Are you sure to delete the movie? ").lower() in ["yes", "y"]:
+                if self.func_ctrl.movie_delete(id):
+                    print(f"""{tf.green("Delete Success!")}""")
+                else:
+                    print(f"""{tf.red("ERROR")}: Delete Movie failed.""")
+            else:
+                print("Delete movie cancelled.")
+            self.try_release_lock(
+                self.acc_ctrl.try_unlock_X(self.cur_user.user_id, "Movie")
+            )
 
     @login_required(cur_user)
     def do_modify(self, args):
         """Update or delete an existing rating by the rating id"""
-        args = self.parse_args(args, 2)
+        args = self.parse_args(args, 3)
         if args:
             try:
-                option, id = args[0], int(args[1])
-                if self.display_rating(id, self.cur_user.user_id):
-                    if option == "update":
-                        self.update_rating(id)
-                    elif option == "delete":
-                        if input("Are you sure to delete? (Y/n)").lower() in ["yes", "y"]:
-                            self.delete_rating(id)
+                table, option, id = args[0], args[1], int(args[2])
+                if table == "movie":
+                    if self.display_movie(id):
+                        if option == "update":
+                            self.update_movie(id)
+                        elif option == "delete":
+                            self.delete_movie(id)
                         else:
-                            print("Delete operation cancelled.")
+                            1 / 0
                     else:
                         1 / 0
+                elif table == "rating":
+                    if self.display_rating(id, self.cur_user.user_id):
+                        if option == "update":
+                            self.update_rating(id)
+                        elif option == "delete":
+                            self.delete_rating(id)
+                        else:
+                            1 / 0
+                    else:
+                        1 / 0
+                else:
+                    1 / 0
             except:
                 print(f"""{tf.red("Warning")}: Invalid Input.""")
+
 
 if __name__ == "__main__":
     CLI().cmdloop()
