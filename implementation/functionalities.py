@@ -1,8 +1,7 @@
-from CONSTANTS import user, password, host, port, sample_database_name, TABLES
+from CONSTANTS import user, password, host, port, sample_database_name
 from mysqlCtrl import MysqlCtrl
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class Functionalities:
@@ -191,7 +190,7 @@ class Functionalities:
 
     def movie_filter_and_sort(
         self, region, year, category, letter, sortedBy, limit: int = 10, offset: int = 0
-    ) -> pd.DataFrame:
+    ):
         """
         movie_filter_and_sort filters movies by region, year, category, letter
         then sort movies by sortedBy, where sortedBy is in {updateTime, popularity, rating}.
@@ -234,27 +233,33 @@ class Functionalities:
                 + "' then 1 else 0 end) > 0"
             )
 
-        if sortedBy == "rating":
+        if sortedBy == "descending":
             queryStatement += " ORDER BY avg_rate DESC"
+        elif sortedBy == "ascending":
+            queryStatement += " ORDER BY avg_rate ASC"
+
 
         queryStatement += " LIMIT " + str(limit) + " OFFSET " + str(offset) + ";"
         result = self.ctrl.query(queryStatement)
-        result.index = np.arange(1, len(result) + 1)
-        result.set_axis(
-            ["ID", "Movie", "Region", "Year", "Category", "Rating", "Introduction"],
-            axis=1,
-            inplace=True,
-        )
-        return result
+        if len(result) == 0:
+            return result
+        else:
+            result.index = np.arange(1, len(result) + 1)
+            result.set_axis(
+                ["ID", "Movie", "Region", "Year", "Category", "Rating", "Introduction"],
+                axis=1,
+                inplace=True,
+            )
+            return result
 
     def get_unique(self, option: str) -> pd.DataFrame:
         if option == "region":
-            result = self.ctrl.query("SELECT DISTINCT(region) FROM Movie;")
+            result = self.ctrl.query("SELECT DISTINCT(region) FROM Movie;").dropna()
             result.index = np.arange(1, len(result) + 1)
             result.set_axis(["Region"], axis=1, inplace=True)
             return result
         elif option == "category":
-            result = self.ctrl.query("SELECT DISTINCT(category) FROM Movie_category;")
+            result = self.ctrl.query("SELECT DISTINCT(category) FROM Movie_category;").dropna()
             result.index = np.arange(1, len(result) + 1)
             result.set_axis(["Category"], axis=1, inplace=True)
             return result
@@ -286,7 +291,7 @@ class Functionalities:
             FROM Celebrity c2  JOIN Movie on Movie.director_id = c2.id
             WHERE c2.name LIKE '%%{n}%%')
         )
-        SELECT m.name as Title, m.region, m.year, m.avg_rate , d.name as Director,
+        SELECT m.id as ID, m.name as Title, m.region, m.year, m.avg_rate , d.name as Director,
         GROUP_CONCAT(DISTINCT CONCAT_WS(' ',a.first_name,a.last_name)) as actor_name, m.introduction
         FROM Movie as m, midList,Actor natural join Celebrity as a, Acts ar, Director natural join Celebrity as d
         WHERE ar.actor_id  = a.id  and ar.movie_id  = m.id  and m.director_id  = d.id  and m.id  = midList.mids
@@ -297,6 +302,7 @@ class Functionalities:
         result.index = np.arange(1, len(result) + 1)
         result.set_axis(
             [
+                "ID",
                 "Movie",
                 "Region",
                 "Year",
@@ -355,25 +361,114 @@ class Functionalities:
         )
         return result
 
-    def graph_summary(self, n: int = 5) -> pd.DataFrame:
+    def num_movies_per_year(self, n: int = 20) -> pd.DataFrame:
         result = self.ctrl.query(
             f"""
-            SELECT year, count(MovieID) AS NumOfMovie FROM Movie GROUP BY year ORDER BY year DESC LIMIT {n}"""
+        SELECT *
+        FROM (
+            SELECT year, count(id) AS NumOfMovie
+            FROM Movie
+            GROUP BY year
+            ORDER BY year DESC
+            LIMIT {n}
+        ) AS D
+        ORDER BY year ASC;
+        """
         )
-        data = []
-        year = []
+        result.set_axis(
+            ["year", "numOfMovies"],
+            axis=1,
+            inplace=True,
+        )
+        result.index = np.arange(1, len(result) + 1)
+        return result
 
-        for row in result:
-            data.append(int(row[1]))
-            year.append(int(row[0]))
+    def director_relative_rating(self, n) -> pd.DataFrame:
+        """
+        The relative rating for all directors (based on the average rating of the average rating for all the movies they directed)
 
-        # axes and labels
-        plt.figure(figsize=(10, 5))
-        plt.bar(year, data, width=0.4)
-        plt.ylabel("Number of Movie")
-        plt.xlabel("Year")
-        plt.title("Number of Movie in recent 20 years")
-        plt.show()
+        Args:
+            none
+
+        Returns: A Table of (director_id, first_name, last_name, relative_rating)
+        """
+
+        result = self.ctrl.query(
+            f"""
+        WITH AverageRating(movie_id, average_rating) AS
+        (
+        SELECT RateBy.movie_id, AVG(Rating.value)
+        FROM RateBy, Rating
+        WHERE RateBy.movie_id = Rating.movie_id AND RateBy.user_id = Rating .user_id AND Rating.value IS NOT NULL
+        GROUP BY Rating.movie_id
+        )
+        SELECT C.id AS director_id, CONCAT(C.first_name, " ", C.last_name) AS name, AVG(A.average_rating) AS relative_rating
+        FROM Celebrity AS C, Movie as M, AverageRating as A
+        WHERE C.id = M.director_id  AND A.movie_id = M.id
+        GROUP BY C.id 
+        ORDER BY relative_rating DESC
+        LIMIT {n}
+        """
+        )
+        result.index = np.arange(1, len(result) + 1)
+        result.set_axis(
+            ["id", "name", "rate"],
+            axis=1,
+            inplace=True,
+        )
+        return result
+
+    def number_of_movies_by_good_directors_per_year(
+        self, n: int, r: float = 0.1
+    ) -> pd.DataFrame:
+        """
+        The number of movies released directed by directors with relative rating of top (n*100)% every year
+
+        Args:
+            n: Number of displayed years
+            r: The percentage of the directors (in decimal) that counts into the number of movies per year
+
+        Returns: A Table of (year, num)
+        """
+
+        result = self.ctrl.query(
+            f"""
+            WITH AverageRating(movie_id, average_rating) AS (
+                SELECT RateBy.movie_id, AVG(Rating.value)
+                FROM RateBy, Rating
+                WHERE RateBy.movie_id = Rating.movie_id AND RateBy.user_id = Rating .user_id AND Rating.value IS NOT NULL
+                GROUP BY Rating.movie_id
+            ),
+            DirectorRating(director_id, director_first_name, director_last_name, relative_rating, relative_rank) AS (
+                SELECT C.id, C.first_name, C.last_name, AVG(A.average_rating) as relative_rating, RANK() OVER (ORDER BY (AVG(A.average_rating)) DESC)
+                FROM Celebrity AS C, Movie as M, AverageRating as A
+                WHERE C.id = M.director_id  AND A.movie_id = M.id
+                GROUP BY C.id 
+                ORDER BY relative_rating DESC
+            ),
+            top_rating_num_directors(year, num) AS (
+                SELECT year, COUNT(*) AS num
+                FROM Movie
+                WHERE director_id IN (
+                    SELECT director_id
+                    FROM DirectorRating
+                    WHERE relative_rank <= (SELECT COUNT(*) FROM DirectorRating)*0.1
+                )
+                GROUP BY year
+                ORDER BY year DESC
+                LIMIT {n}
+            )
+            SELECT *
+            FROM top_rating_num_directors
+            ORDER BY year ASC;
+        """
+        )
+        result.index = np.arange(1, len(result) + 1)
+        result.set_axis(
+            ["year", "num"],
+            axis=1,
+            inplace=True,
+        )
         return result
 
     def employee_permission_authentication(self, employee_id, action, tables) -> bool:
@@ -426,25 +521,22 @@ class Functionalities:
         Return:
             boolean, true if insertion success, false otherwise
         """
-        insertStatement = """START TRANSACTION;
+        insertStatement1 = f"""
         INSERT INTO RateBy (movie_id, user_id)
         SELECT {movie_id} AS movie_id, {user_id} AS user_id
         FROM RateBy
         WHERE (movie_id = {movie_id} AND user_id = {user_id})
         HAVING COUNT(*) = 0;
+        """
+        insertStatement2 = f"""
         INSERT INTO Rating (id, time, value, comment, movie_id, user_id)
-        VALUES ({id}, NOW(), {value}, '{comment}', {movie_id}, {user_id});
-        COMMIT;"""
-
-        insertStatement = insertStatement.format(
-            movie_id=movie_id,
-            user_id=user_id,
-            id=rating_id,
-            value=rating_value,
-            comment=comment,
-        )
-        status = self.ctrl.execute(insertStatement)
-        return status
+        VALUES ({rating_id}, NOW(), {rating_value}, '{comment}', {movie_id}, {user_id});
+        """
+        status1 = self.ctrl.execute(insertStatement1)
+        status = False
+        if status1:
+            status2 = self.ctrl.execute(insertStatement2)
+        return status2
 
     def user_rating_delete(self, rating_id) -> bool:
         """
@@ -458,7 +550,7 @@ class Functionalities:
         status = self.ctrl.execute(deleteStatement)
         return status
 
-    def user_rating_update(self, rating_id, new_rating_value, new_comment) -> bool:
+    def user_rating_update(self, rating_id, new_rating_value, new_comment, new_time) -> bool:
         """
         update a rating record
         Args:
@@ -468,11 +560,56 @@ class Functionalities:
         Return:
             true if update is successful, false otherwise
         """
-        updateStatement = "UPDATE Rating SET value = {new_rating_value}, comment = '{new_comment}' WHERE id = {rating_id};"
-        updateStatement = updateStatement.format(
-            new_rating_value=new_rating_value,
-            new_comment=new_comment,
-            rating_id=rating_id,
-        )
+        updateStatement = f"UPDATE Rating SET value = {new_rating_value}, comment = '{new_comment}', time = '{new_time}' WHERE id = {rating_id};"
         status = self.ctrl.execute(updateStatement)
         return status
+
+    def movie_update(self, movie_id, new_region, new_year, new_introduction) -> bool:
+        updateStatement = f"UPDATE Movie SET region = '{new_region}', year = {new_year}, introduction = '{new_introduction}' WHERE id = {movie_id};"
+        status = self.ctrl.execute(updateStatement)
+        return status
+
+    def movie_delete(self, id) -> bool:
+        status = self.ctrl.execute(f"DELETE FROM Acts WHERE Acts.movie_id = {id};")
+        if not status:
+            return status
+        status = self.ctrl.execute(
+            f"DELETE FROM Movie_category WHERE Movie_category.movie_id = {id};"
+        )
+        if not status:
+            return status
+        status = self.ctrl.execute(f"DELETE FROM Rating WHERE Rating.movie_id = {id};")
+        if not status:
+            return status
+        status = self.ctrl.execute(f"DELETE FROM RateBy WHERE RateBy.movie_id = {id};")
+        if not status:
+            return status
+        status = self.ctrl.execute(f"DELETE FROM Movie WHERE Movie.id = {id};")
+        return status
+
+    def user_rating_count_movie_id(self, movie_id):
+        queryStatement = f"""
+        SELECT count(*)
+        FROM Rating
+        WHERE movie_id = {movie_id};
+        """
+        result = self.ctrl.query(queryStatement).iloc[0][0]
+        return int(result)
+
+    def category_count_movie_id(self, movie_id):
+        queryStatement = f"""
+        SELECT count(*)
+        FROM Movie_category
+        WHERE Movie_category.movie_id = {movie_id};
+        """
+        result = self.ctrl.query(queryStatement).iloc[0][0]
+        return int(result)
+
+    def acts_count_movie_id(self, movie_id):
+        queryStatement = f"""
+        SELECT count(*)
+        FROM Acts
+        WHERE Acts.movie_id = {movie_id};
+        """
+        result = self.ctrl.query(queryStatement).iloc[0][0]
+        return int(result)

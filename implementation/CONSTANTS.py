@@ -46,6 +46,56 @@ app_name = "MOVIEWER"
 import textFormatter as tf
 
 menus = [
+    ["Top movies", ["tm", "<n>"]],
+    ["Top actors", ["ta", "<n>"]],
+    ["Top categories with movies", ["tc", "<n>", "<m>"]],
+    ["Search a key word", ["search", "<movie/celebrity>"]],
+    ["Functional Filtering", ["fsp"]],
+    [
+        f"List {tf.pink('fsp')} sub-options",
+        ["list", "<region|year|category|letter|sortedBy|n>"],
+    ],
+    ["Graph diagrams", ["graph"]],
+    ["Home page", ["home"]],
+    [
+        "Navigate a certain entry",
+        ["navigate", "<movie|celebrity|director|actor>", "<id>"],
+    ],
+    ["Account login", ["login"]],
+    ["Account register", ["register"]],
+    ["My Profile", ["me"]],
+    ["Command example", ["help", "<option>"]],
+    ["Quit", ["q"]],
+]
+
+menus_user = [
+    ["Top movies", ["tm", "<n>"]],
+    ["Top actors", ["ta", "<n>"]],
+    ["Top categories with movies", ["tc", "<n>", "<m>"]],
+    ["Search a key word", ["search", "<movie/celebrity>"]],
+    ["Functional Filtering", ["fsp"]],
+    [
+        f"List {tf.pink('fsp')} sub-options",
+        ["list", "<region|year|category|letter|sortedBy|n>"],
+    ],
+    ["Graph diagrams", ["graph"]],
+    ["Home page", ["home"]],
+    [
+        "Navigate a certain entry",
+        ["navigate", "<movie|celebrity|director|actor|rating>", "<id>"],
+    ],
+    ["Account login", ["login"]],
+    ["Account logout", ["logout"]],
+    ["Account register", ["register"]],
+    ["Rate a movie", ["rate", "<movie_id>"]],
+    ["Modify", ["modify", "<rating>", "<update|delete>", "<rating_id>"]],
+    ["My Profile", ["me"]],
+    ["Command example", ["help", "<option>"]],
+    ["Quit", ["q"]],
+]
+
+
+menus_employee = [
     ["Search a key word", ["search", "<movie/celebrity>"]],
     ["Top movies", ["tm", "<n>"]],
     ["Top actors", ["ta", "<n>"]],
@@ -55,24 +105,20 @@ menus = [
         f"List {tf.pink('fsp')} sub-options",
         ["list", "<region|year|category|letter|sortedBy|n>"],
     ],
+    ["Graph diagrams", ["graph"]],
     ["Home page", ["home"]],
     [
         "Navigate a certain entry",
         ["navigate", "<movie|celebrity|director|actor|rating>", "<id>"],
     ],
-    ["User account login", ["login"]],
-    ["User account logout", ["logout"]],
-    ["User account register", ["register"]],
+    ["Account login", ["login"]],
+    ["Account logout", ["logout"]],
+    ["Account register", ["register"]],
+    ["Modify", ["modify", "<movie|rating>", "<update|delete>", "<rating_id>"]],
     ["My Profile", ["me"]],
     ["Command example", ["help", "<option>"]],
     ["Quit", ["q"]],
 ]
-
-from copy import deepcopy
-
-menus_plus = deepcopy(menus)
-menus_plus.insert(12, ["Rate a movie", ["rate", "<movie_id>"]])
-menus_plus.insert(13, ["Modify a Rating", ["modify", "<update|delete>", "<rating_id>"]])
 
 # User
 from string import ascii_letters, digits
