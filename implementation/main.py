@@ -4,7 +4,7 @@ import cmd
 
 class CLI(cmd.Cmd):
     
-    prompt = 'dbApp> '
+    prompt = 'dbApp>'
     func_ctrl = Functionalities()
 
     def parse_args(self, args: str, num_expected: int):
