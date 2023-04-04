@@ -613,3 +613,10 @@ class Functionalities:
         """
         result = self.ctrl.query(queryStatement).iloc[0][0]
         return int(result)
+    
+if __name__ == "__main__":
+    func = Functionalities()
+    print(func.employee_permission_authentication(
+                3000, "update", ["rating"]
+            ))
+    

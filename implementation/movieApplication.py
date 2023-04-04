@@ -92,6 +92,26 @@ def User_required(cur_user: User):
     return inner
 
 
+def Employee_Permission_required(func_ctrl, cur_user: User, action: str, tables: list):
+    def inner(func):
+        def wrapper(*args):
+            if cur_user.user_type in [
+                "Standard",
+                "Premium",
+            ] or func_ctrl.employee_permission_authentication(
+                cur_user.user_id, action, tables
+            ):
+                return func(*args)
+            else:
+                print(
+                    f"""[{tf.red("Warning")}]: Employee is not permitted to use this function."""
+                )
+
+        return wrapper
+
+    return inner
+
+
 class CLI(cmd.Cmd):
 
     base_location = "Home"
@@ -646,6 +666,7 @@ class CLI(cmd.Cmd):
             print(f"""{tf.red("Lock Released Failed")}: You don't have the lock.""")
 
     @Standard_required(cur_user)
+    @Employee_Permission_required(func_ctrl, cur_user, "update", ["user"])
     def update_rating(self, id: int):
         if self.try_accquire_lock(
             self.acc_ctrl.try_lock_X(self.cur_user.user_id, "Rating")
@@ -669,13 +690,14 @@ class CLI(cmd.Cmd):
             )
 
     @Premium_required(cur_user)
+    @Employee_Permission_required(func_ctrl, cur_user, "update", ["user"])
     def delete_rating(self, id: int):
         if input("Are you sure to delete? (Y/n)").lower() in [
             "yes",
             "y",
         ]:
             if self.try_accquire_lock(
-                self.acc_ctrl.try_lock_X(self.cur_user.user_id, "Rating")
+                self.acc_ctrl.try_lock_X(self.cur_user.user_id, "user")
             ):
                 if self.func_ctrl.user_rating_delete(id):
                     print(f"""{tf.green("Delete Success!")}""")
@@ -687,6 +709,7 @@ class CLI(cmd.Cmd):
         else:
             print("Delete operation cancelled.")
 
+    @Employee_Permission_required(func_ctrl, cur_user, "update", ["movie"])
     @Employee_required(cur_user)
     def update_movie(self, id: int):
         if self.try_accquire_lock(
@@ -711,6 +734,7 @@ class CLI(cmd.Cmd):
                 self.acc_ctrl.try_unlock_X(self.cur_user.user_id, "Movie")
             )
 
+    @Employee_Permission_required(func_ctrl, cur_user, "delete", ["movie"])
     @Employee_required(cur_user)
     def delete_movie(self, id: int):
         if self.try_accquire_lock(

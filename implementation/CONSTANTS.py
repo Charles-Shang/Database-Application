@@ -113,7 +113,7 @@ menus_employee = [
     ],
     ["Account login", ["login"]],
     ["Account logout", ["logout"]],
-    ["Account register", ["register"]],
+    ["Account register", ["register", "[employee]"]],
     ["Modify", ["modify", "<movie|rating>", "<update|delete>", "<rating_id>"]],
     ["My Profile", ["me"]],
     ["Command example", ["help", "<option>"]],
