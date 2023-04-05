@@ -120,6 +120,9 @@ menus_employee = [
     ["Quit", ["q"]],
 ]
 
+import os
+base_directory = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
+
 # User
 from string import ascii_letters, digits
 

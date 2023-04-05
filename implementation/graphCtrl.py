@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
-
+from CONSTANTS import base_directory
+import textFormatter as tf
 
 class Graph:
     def addlabels(self, x, y):
@@ -13,6 +14,8 @@ class Graph:
         plt.ylabel(y_label)
         plt.xlabel(x_label)
         plt.title(title)
+        plt.savefig(base_directory + f"/plot/{title.replace(' ', '_')}.png")
+        print("The diagram has been exported into " + tf.yellow(base_directory + f"/plot/{title.replace(' ', '_')}.png"))
         plt.show()
 
     def draw_line(self, data_x, data_y, x_label, y_label, title):
@@ -22,6 +25,8 @@ class Graph:
         plt.ylabel(y_label)
         plt.xlabel(x_label)
         plt.title(title)
+        plt.savefig(base_directory + f"/plot/{title.replace(' ', '_')}.png")
+        print("The diagram has been exported into " + tf.yellow(base_directory + f"/plot/{title.replace(' ', '_')}.png"))
         plt.show()
 
     def draw_pie(self, data_y, labels, title):
@@ -36,4 +41,6 @@ class Graph:
         plt.figure()
         plt.pie(data_y, labels=labels, autopct=autopct_format(data_y))
         plt.title(title)
+        plt.savefig(base_directory + f"/plot/{title.replace(' ', '_')}.png")
+        print("The diagram has been exported into " + tf.yellow(base_directory + f"/plot/{title.replace(' ', '_')}.png"))
         plt.show()
