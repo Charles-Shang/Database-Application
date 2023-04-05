@@ -34,10 +34,6 @@ database: productiondb
 
 Note that the server is set up on AWS RDS, sometimes it is not as stable, if the database is down, contact j32shang@uwaterloo.ca for rebooting the server.
 
-## SQL Query and output
-
-All SQL outputs are displayed in the report using snapshots. All SQL related files are place in folder `assets`, specifically `assets/sql_sample` stores all sample sql code, `assets/sql_sample_out` stores all output from sample sql code, `assets/sql_template` stores all sql templates. Note that the production data is not stored in this repository as they can be large, but the snapshots of output using production data sets are included in the report.
-
 ## Environment setup (Based on Linux)
 1. Install `Anaconda3-2022.10-Linux-x86_64.sh`[https://repo.anaconda.com/archive/Anaconda3-2023.03-Linux-x86_64.sh]
 2. All pip required packages are listed in `requirement.txt`
@@ -53,6 +49,10 @@ Note that the server is set up on AWS EC2, sometimes it is not as stable, if the
 
 ## Running Application
 To run the application, go to `Database-Application/implementation/` and `python movieApplication.py`. To start with, type `menu` to get a series of commands. More details on the demonstration of the application is in our report.
+
+## SQL Query and output
+
+All SQL outputs are displayed in the report using snapshots. All SQL related files are place in folder `assets`, specifically `assets/sql_sample` stores all sample sql code, `assets/sql_sample_out` stores all output from sample sql code, `assets/sql_template` stores all sql templates. Note that the production data is not stored in this repository as they can be large, but the snapshots of output using production data sets are included in the report.
 
 ## Current Supported Features
 ### Features from R6 to R16
