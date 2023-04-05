@@ -2,7 +2,8 @@ from CONSTANTS import user, password, host, port, sample_database_name
 from mysqlCtrl import MysqlCtrl
 import pandas as pd
 import numpy as np
-
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 class Functionalities:
     def __init__(self):

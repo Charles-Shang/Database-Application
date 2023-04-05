@@ -283,6 +283,7 @@ class CLI(cmd.Cmd):
         if args:
             option = args[0].lower()
             if option in ["region", "category"]:
+                print(f"{tf.yellow('Very Important')}: You must type the exact region from the following list, and replace the space using underscore. E.g. United States => United_States")
                 print(self.func_ctrl.get_unique(option))
             elif option == "year":
                 print("Movies with producing year from 1950 to 2022.")
@@ -697,7 +698,7 @@ class CLI(cmd.Cmd):
             "y",
         ]:
             if self.try_accquire_lock(
-                self.acc_ctrl.try_lock_X(self.cur_user.user_id, "user")
+                self.acc_ctrl.try_lock_X(self.cur_user.user_id, "Rating")
             ):
                 if self.func_ctrl.user_rating_delete(id):
                     print(f"""{tf.green("Delete Success!")}""")
@@ -720,8 +721,7 @@ class CLI(cmd.Cmd):
                 year = input("Enter the year: ")
                 try:
                     year = int(year)
-                    if 1 <= year <= 10:
-                        break
+                    break
                 except:
                     print(f"""{tf.red("Warning")}: Invalid Year.""")
                     continue
