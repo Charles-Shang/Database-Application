@@ -29,7 +29,7 @@ Our production database has been retrived and partially generated using iMDb and
 host: cs348project.ceggb9lnr3wd.us-west-1.rds.amazonaws.com
 user: root
 password: cs348group11
-database: sampledb
+database: productiondb
 ```
 
 Note that the server is set up on AWS RDS, sometimes it is not as stable, if the database is down, contact j32shang@uwaterloo.ca for rebooting the server.
